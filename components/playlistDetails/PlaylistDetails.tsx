@@ -10,10 +10,9 @@ import { useParams } from 'next/navigation'
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react'
 import { FaExclamationTriangle } from 'react-icons/fa';
-import { PropagateLoader } from 'react-spinners';
 import { ImageLoaderProps } from "next/image";
 import { VideoData, PlayListData, PlaylistCard } from '@/lib/types';
-import DetaisSkeleton from './DetaisSkeleton';
+import DetailsSkeleton from './DetailsSkeleton';
 
 
 
@@ -172,6 +171,7 @@ export default function PlaylistDetails() {
       thumbnail: playlistData.thumbnail,
       channelTitle: playlistData.channelTitle,
       channelId: playlistData.channelId,
+      totalDuration: videoData ? convertToHrs(videoData.reduce((acc, item) => acc + (item.duration ? Number(item.duration) : 0), 0)) : undefined,
     }
     // Save to recent playlists in localStorage
     const recentPlaylists = JSON.parse(localStorage.getItem('recentPlaylists') || '[]');
@@ -186,8 +186,8 @@ export default function PlaylistDetails() {
 
   if (videoData === null && error === null) {
     return (
-      <div className='flex flex-col items-center justify-center pt-16 min-h-dvh md:min-h-screen bg-zinc-950 text-white px-4'>
-        <DetaisSkeleton />
+      <div className='flex flex-col items-center justify-center pt-16 h-dvh md:h-screen overflow-hidden bg-zinc-950 text-white px-4'>
+        <DetailsSkeleton />
       </div>
     )
 

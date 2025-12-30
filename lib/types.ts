@@ -18,6 +18,7 @@ type PlaylistCard = {
   thumbnail: string;
   channelTitle: string;
   channelId: string;
+  totalDuration?: string;
 }
 
 type PlayListData = {

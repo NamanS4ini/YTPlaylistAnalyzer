@@ -93,10 +93,10 @@ export default function Homepage() {
     <main className="min-h-screen max-w-4xl mx-auto bg-zinc-950 text-white px-6 py-24 flex flex-col items-center">
       <div className="flex flex-col items-center w-full">
         {/* YouTube Logo */}
-        <FaYoutube className="text-red-600 w-16 h-16 mb-4" />
+        <FaYoutube color="red"  className="w-16 h-16 mb-4" />
 
         {/* Heading and Subtext */}
-        <h1 className="text-4xl font-bold text-center mb-2">
+        <h1 className="text-3xl sm:text-4xl font-bold text-center mb-2">
           YouTube Playlist Analyzer
         </h1>
         <h2 className="text-zinc-400 text-center max-w-xl mb-10">
@@ -170,11 +170,9 @@ export default function Homepage() {
           </div>
         </div>
       </div>
-      <div className="w-full mt-20">
+      <div className="w-full mt-10">
       <Recent />
       </div>
     </main>
-
-
   );
 }

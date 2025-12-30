@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 
 export default function SavedPlaylistPage() {
   return (
-    <div className="min-h-dvh">
+    <div className="min-h-dvh bg-zinc-950">
       <SavedPlaylist />
     </div>
   )

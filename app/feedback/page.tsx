@@ -25,8 +25,8 @@ export const metadata: Metadata = {
 const Feedback = () => {
   return (
     <>
-        <main className="pt-20 bg-white min-h-screen flex justify-center">
-            <iframe className='text-white' src="https://docs.google.com/forms/d/e/1FAIpQLSdPaVJ0_2mfaJ69e5A1JkskNnF9NMc1iIbigHD2VHYCKDNhsQ/viewform?embedded=true" width="700" height="screen">Loading…</iframe>    
+        <main className="pt-20  bg-zinc-950 min-h-screen flex justify-center">
+            <iframe className='invert hue-rotate-180' src="https://docs.google.com/forms/d/e/1FAIpQLSdPaVJ0_2mfaJ69e5A1JkskNnF9NMc1iIbigHD2VHYCKDNhsQ/viewform?embedded=true" width="700" height="screen">Loading…</iframe>    
         </main> 
     </>
   )

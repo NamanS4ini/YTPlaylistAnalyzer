@@ -17,7 +17,7 @@ export default function NavigationMenuDemo() {
       <div className="flex items-center justify-between w-full max-w-7xl gap-4">
         <div>
           <Link href="/">
-            <h1 className="text-2xl font-bold">
+            <h1 className="sm:text-2xl font-bold">
               YouTube Analyzer
             </h1>
           </Link>
@@ -27,20 +27,20 @@ export default function NavigationMenuDemo() {
             <NavigationMenuList>
               <NavigationMenuItem>
                 <NavigationMenuLink asChild>
-                  <Link href="/" className="px-4 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+                  <Link href="/" className="sm:px-4 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
                     Home
                   </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <NavigationMenuLink asChild>
-                  <Link href="/saved" className="px-4 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+                  <Link href="/saved" className="sm:px-4 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
                     Saved
                   </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="px-4 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+                <NavigationMenuTrigger className="sm:px-4 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
                   About
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
@@ -57,7 +57,7 @@ export default function NavigationMenuDemo() {
                     </li>
                     <li>
                       <NavigationMenuLink asChild>
-                        <Link target="_blank" href="https://github.com/NamanS4ini/YTPlaylistAnalyzer" className="flex">
+                        <Link href="/feedback" className="flex">
                           <h1 className="font-medium flex items-center gap-2">
                             <CircleAlertIcon />
                             Feedback
