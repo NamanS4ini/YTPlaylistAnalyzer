@@ -1,39 +1,21 @@
 "use client"
 import Image from 'next/image';
 import Link from 'next/link'
-import { Button } from 'flowbite-react';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { BookmarkIcon, ArrowRight } from "lucide-react"
+import { Toggle } from "@/components/ui/toggle"
 import { useParams } from 'next/navigation'
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react'
 import { FaExclamationTriangle } from 'react-icons/fa';
-import { FaBookmark } from 'react-icons/fa';
-import { CiBookmark } from "react-icons/ci";
 import { PropagateLoader } from 'react-spinners';
 import { ImageLoaderProps } from "next/image";
+import { VideoData, PlayListData, PlaylistCard } from '@/lib/types';
+import DetaisSkeleton from './DetaisSkeleton';
 
 
-//Type for videoData received from backend
-type VideoData = {
-  id: string;
-  title: string;
-  thumbnail?: string;
-  channelTitle?: string;
-  channelId?: string;
-  duration: string | null;
-  publishedAt: string;
-  position: number;
-  views: number | null;
-  likes: number | null;
-  comments: number | null;
-}
-
-type PlayListData = {
-  id: string;
-  title: string;
-  channelId: string;
-  channelTitle: string;
-  thumbnail: string | null;
-}
 
 export default function PlaylistDetails() {
 
@@ -65,11 +47,11 @@ export default function PlaylistDetails() {
 
 
 
-// Use custom image loader to optimize thumbnail loading
-const wsrvLoader = ({ src, width, quality }: ImageLoaderProps) => {
-  const encoded = encodeURIComponent(src);
-  return `https://wsrv.nl/?url=${encoded}&w=${width}&q=${quality || 75}`;
-};
+  // Use custom image loader to optimize thumbnail loading
+  const wsrvLoader = ({ src, width, quality }: ImageLoaderProps) => {
+    const encoded = encodeURIComponent(src);
+    return `https://wsrv.nl/?url=${encoded}&w=${width}&q=${quality || 75}`;
+  };
 
 
 
@@ -181,10 +163,31 @@ const wsrvLoader = ({ src, width, quality }: ImageLoaderProps) => {
 
   }, [id, start, end]);
 
+  useEffect(() => {
+    if (!playlistData) return;
+    document.title = `${playlistData.title} - YTPLA`;
+    const currentPlaylist: PlaylistCard = {
+      id: playlistData.id,
+      title: playlistData.title,
+      thumbnail: playlistData.thumbnail,
+      channelTitle: playlistData.channelTitle,
+      channelId: playlistData.channelId,
+    }
+    // Save to recent playlists in localStorage
+    const recentPlaylists = JSON.parse(localStorage.getItem('recentPlaylists') || '[]');
+    // Remove if already exists
+    const filteredPlaylists = recentPlaylists.filter((playlist: { id: string }) => playlist.id !== currentPlaylist.id);
+    // Add to the start
+    filteredPlaylists.unshift(currentPlaylist);
+    // Keep only latest 10
+    const limitedPlaylists = filteredPlaylists.slice(0, 10);
+    localStorage.setItem('recentPlaylists', JSON.stringify(limitedPlaylists));
+  }, [playlistData]);
+
   if (videoData === null && error === null) {
     return (
       <div className='flex flex-col items-center justify-center pt-16 min-h-dvh md:min-h-screen bg-zinc-950 text-white px-4'>
-        <PropagateLoader color="#00abff" />
+        <DetaisSkeleton />
       </div>
     )
 
@@ -218,15 +221,14 @@ const wsrvLoader = ({ src, width, quality }: ImageLoaderProps) => {
         </p>
 
         <div className="flex gap-3 flex-col sm:flex-row">
-          <Button color={"green"}
-            className='cursor-pointer'
+          <Button className='cursor-pointer dark'
             onClick={() => window.location.reload()}
           >
             Reload Page
           </Button>
 
           <Link href="/">
-            <Button color={"dark"} className='cursor-pointer'>Back to Home</Button>
+            <Button className='cursor-pointer'>Back to Home</Button>
           </Link>
         </div>
       </main>
@@ -243,9 +245,18 @@ const wsrvLoader = ({ src, width, quality }: ImageLoaderProps) => {
                 {playlistData?.title}
               </a>
             </h1>
-            <button onClick={handleBookmark} className='cursor-pointer'>
+            {/* <button onClick={handleBookmark} className='cursor-pointer'>
               {!isBookmarked ? <CiBookmark size={28} className='text-current' /> : <FaBookmark size={24} className='text-current' />}
-            </button>
+            </button> */}
+            <Toggle
+              onClick={handleBookmark}
+              size="lg"
+              variant="outline"
+              className="dark text-lg cursor-pointer"
+            >
+              <BookmarkIcon fill={isBookmarked ? "white": "black"} />
+              {isBookmarked ? " Bookmarked" : " Bookmark"}
+            </Toggle>
           </div>
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-4 p-5 max-w-6xl w-full mx-auto'>
             <div className='bg-zinc-900 hover:bg-zinc-800 items-center justify-center border h-fit  border-zinc-800 rounded-2xl p-8 shadow-xl w-full max-w-md space-y-6'>
@@ -283,8 +294,8 @@ const wsrvLoader = ({ src, width, quality }: ImageLoaderProps) => {
               </p>
             </div>
             <div className='bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-2xl p-8 shadow-xl w-full max-w-md space-y-6'>
-              <p className='text-xl'>
-                Playback Speed -&gt;
+              <p className='text-xl flex items-center gap-2'>
+                Playback Speed <ArrowRight/>
               </p>
               <p>1.25x:
                 <span className='font-bold '>
@@ -317,18 +328,17 @@ const wsrvLoader = ({ src, width, quality }: ImageLoaderProps) => {
           <h2 className='text-4xl flex md:flex-row items-center gap-5 flex-col justify-between font-bold'>
             Videos in Playlist
             <span>
-              <label className="inline-flex items-center cursor-pointer">
-                <input onChange={() => { handelThumb() }} type="checkbox" defaultChecked={thumbnail} className="sr-only peer" />
-                <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
-                <span className="ms-3 text-2xl font-medium text-gray-900 dark:text-gray-300">Thumbnails</span>
-              </label>
+              <Switch id='thumbnail' onClick={() => { handelThumb() }} defaultChecked={thumbnail} className='dark cursor-pointer' />
+              <Label htmlFor='thumbnail' className="inline-flex items-center cursor-pointer">
+                <span className="ms-3 text-2xl font-medium dark">Thumbnails</span>
+              </Label>
 
             </span>
           </h2>
           <div className='flex gap-10 justify-center md:justify-start items-center p-5'>
             <h2 className='text-2xl flex justify-between font-bold'>Sort By: </h2>
             <div className='flex gap-4 justify-center items-center'>
-              <select defaultValue="position" onChange={(e) => handelSort(e)} id="countries" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+              <select defaultValue="position" onChange={(e) => handelSort(e)} className="text-sm rounded-lg dark block p-2.5 bg-zinc-900 border-zinc-800 placeholder-zinc-400 text-white">
                 <option value="position">Playlist Order</option>
                 <option value="views">Views</option>
                 <option value="likes">Likes</option>

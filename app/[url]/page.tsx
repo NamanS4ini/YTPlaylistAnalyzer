@@ -1,4 +1,4 @@
-import PlaylistDetails from '@/components/PlaylistDetails'
+import PlaylistDetails from '@/components/playlistDetails/PlaylistDetails'
 import {Metadata} from 'next'
 import React from 'react'
 

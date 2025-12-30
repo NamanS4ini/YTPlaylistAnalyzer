@@ -1,6 +1,7 @@
 import React from 'react'
 import { Metadata } from 'next'
-import Homepage from '@/components/Homepage'
+import { ToastContainer, Bounce } from 'react-toastify';
+import Homepage from '@/components/home/Homepage'
 
 export const metadata: Metadata = {
   title: "YouTube Playlist Duration Calculator | YTPLA",
@@ -13,7 +14,22 @@ export const metadata: Metadata = {
 
 const page = () => {
   return (
+    <div className='bg-zinc-950'>
+      <ToastContainer
+              position="top-right"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick={false}
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="dark"
+              transition={Bounce}
+            />
     <Homepage />
+    </div>
   )
 }
 

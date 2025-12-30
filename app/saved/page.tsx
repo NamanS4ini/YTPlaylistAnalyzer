@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import SavedPlaylist from "@/components/savedPlaylist";
+import SavedPlaylist from "@/components/SavedPlaylist";
 
 export const metadata: Metadata = {
   title: "Saved Playlists",
@@ -23,8 +23,8 @@ export const metadata: Metadata = {
 
 export default function SavedPlaylistPage() {
   return (
-    <>
+    <div className="min-h-dvh">
       <SavedPlaylist />
-    </>
+    </div>
   )
 }
