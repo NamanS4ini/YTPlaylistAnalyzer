@@ -29,7 +29,7 @@ type PlayListData = {
   thumbnail: string;
 }
 
-interface Playlist {
+type Playlist = {
   id: string;
   title: string;
   channelTitle: string;
