@@ -215,7 +215,7 @@ export default function Homepage() {
       </div>
 
       {/* Divider */}
-      <div className="w-full max-w-2xl my-16 h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
+      <div className="w-full max-w-2xl my-8 h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
 
       <div className="w-full relative z-10">
         <Recent />

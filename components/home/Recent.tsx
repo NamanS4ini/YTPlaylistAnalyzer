@@ -21,7 +21,7 @@ const Recent = () => {
   }
 
   return (
-    <div className="mt-10 w-full max-w-5xl mx-auto px-4">
+    <div className="w-full max-w-5xl mx-auto px-4">
       <h2 className="text-lg sm:text-2xl font-bold mb-10">
         Recently Analyzed Playlists
       </h2>
