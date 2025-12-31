@@ -30,6 +30,7 @@ const Recent = () => {
           <Empty
             title="No Recent Playlists"
             desc="You haven't analyzed any playlists recently. Start by analyzing a playlist to see it here."
+            btnText="Analyze Your First Playlist"
           />
         )}
         {recent?.map((playlist) => (
