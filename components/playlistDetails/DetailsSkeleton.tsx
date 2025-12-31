@@ -3,7 +3,7 @@ import { Skeleton } from "../ui/skeleton";
 
 const DetailsSkeleton = () => {
   return (
-    <div className="flex flex-col pt-16 items-center bg-zinc-950 text-white px-4 w-full">
+    <div className="flex flex-col pt-16 items-center max-h-dvh overflow-hidden bg-zinc-950 text-white px-4 w-full">
       <div className="w-full max-w-6xl mx-auto">
         {/* Header with title and bookmark button */}
         <div className="flex items-center justify-between gap-4 py-5">

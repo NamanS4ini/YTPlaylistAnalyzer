@@ -202,7 +202,7 @@ export default function PlaylistDetails() {
 
   if (videoData === null && error === null) {
     return (
-      <div className="flex flex-col items-center justify-center pt-16 h-dvh md:h-screen overflow-hidden bg-zinc-950 text-white px-4">
+      <div className="flex flex-col items-center justify-center bg-zinc-950 text-white px-4">
         <DetailsSkeleton />
       </div>
     );
@@ -266,9 +266,7 @@ export default function PlaylistDetails() {
                 {playlistData?.title}
               </a>
             </h1>
-            {/* <button onClick={handleBookmark} className='cursor-pointer'>
-              {!isBookmarked ? <CiBookmark size={28} className='text-current' /> : <FaBookmark size={24} className='text-current' />}
-            </button> */}
+            <div>
             <Toggle
               onClick={handleBookmark}
               size="lg"
@@ -278,6 +276,7 @@ export default function PlaylistDetails() {
               <BookmarkIcon fill={isBookmarked ? "white" : "black"} />
               {isBookmarked ? " Bookmarked" : " Bookmark"}
             </Toggle>
+              </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-4 p-5 max-w-6xl w-full mx-auto">
             <div className="bg-zinc-900 hover:bg-zinc-800 items-center justify-center border h-fit  border-zinc-800 rounded-2xl p-8 shadow-xl w-full max-w-md space-y-6">
