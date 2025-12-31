@@ -183,7 +183,7 @@ export default function PlaylistDetails() {
               0
             )
           )
-        : undefined,
+        : "Unknown",
     };
     // Save to recent playlists in localStorage
     const recentPlaylists = JSON.parse(

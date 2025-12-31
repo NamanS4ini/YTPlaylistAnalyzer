@@ -37,4 +37,10 @@ type Playlist = {
   channelId: string;
 };
 
-export type { VideoData, PlayListData, PlaylistCard, Playlist };
+type AnnouncementType = {
+  id: number;
+  message: string;
+  enabled: boolean;
+}
+
+export type { VideoData, PlayListData, PlaylistCard, Playlist, AnnouncementType };
