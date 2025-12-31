@@ -22,24 +22,20 @@ export default function NavigationMenuDemo() {
           <NavigationMenu className="dark">
             <NavigationMenuList>
               <NavigationMenuItem>
-                <NavigationMenuLink asChild>
-                  <Link
-                    href="/"
-                    className="sm:px-4 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-                  >
-                    Home
-                  </Link>
-                </NavigationMenuLink>
+                <Link
+                  href="/"
+                  className="sm:px-4 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                >
+                  Home
+                </Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuLink asChild>
-                  <Link
-                    href="/saved"
-                    className="sm:px-4 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-                  >
-                    Saved
-                  </Link>
-                </NavigationMenuLink>
+                <Link
+                  href="/saved"
+                  className="sm:px-4 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                >
+                  Saved
+                </Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <NavigationMenuTrigger className="sm:px-4 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
