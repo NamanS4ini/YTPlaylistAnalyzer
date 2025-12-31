@@ -10,7 +10,7 @@ type VideoData = {
   views: number | null;
   likes: number | null;
   comments: number | null;
-}
+};
 
 type PlaylistCard = {
   id: string;
@@ -19,7 +19,7 @@ type PlaylistCard = {
   channelTitle: string;
   channelId: string;
   totalDuration?: string;
-}
+};
 
 type PlayListData = {
   id: string;
@@ -27,7 +27,7 @@ type PlayListData = {
   channelId: string;
   channelTitle: string;
   thumbnail: string;
-}
+};
 
 type Playlist = {
   id: string;
@@ -35,6 +35,6 @@ type Playlist = {
   channelTitle: string;
   thumbnail: string;
   channelId: string;
-}
+};
 
 export type { VideoData, PlayListData, PlaylistCard, Playlist };

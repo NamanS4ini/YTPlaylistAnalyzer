@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Analytics } from "@vercel/analytics/react"
-import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import Navbar from "@/components/navbar/navbar";
 import Announcement from "@/components/Announcement";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -63,8 +64,6 @@ export const metadata: Metadata = {
   category: "technology",
 };
 
-
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -73,7 +72,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <Script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}`}></Script>
+        <Script
+          async
+          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}`}
+        ></Script>
         <Script id="google-analytics" strategy="afterInteractive">
           {`window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
@@ -81,7 +83,6 @@ export default function RootLayout({
 
           gtag('config', 'G-4CKFLK4PCF');`}
         </Script>
-
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased text-white bg-zinc-900`}
@@ -89,6 +90,7 @@ export default function RootLayout({
         <Navbar />
         {children}
         <Analytics />
+        <Toaster className="dark" position="top-center" richColors />
         <SpeedInsights />
         <Announcement />
       </body>

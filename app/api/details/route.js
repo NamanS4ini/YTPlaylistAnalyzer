@@ -31,17 +31,19 @@ function validateOrigin(request) {
   const referer = request.headers.get("referer");
 
   // Parse WEBSITE_LINK as comma-separated array of allowed domains
-  const allowedOrigins = process.env.WEBSITE_LINK 
-    ? process.env.WEBSITE_LINK.split(',').map(domain => domain.trim())
+  const allowedOrigins = process.env.WEBSITE_LINK
+    ? process.env.WEBSITE_LINK.split(",").map((domain) => domain.trim())
     : [];
 
   // Check if null origin with valid referer from any allowed domain
-  const isValidReferer = allowedOrigins.some(domain => referer?.startsWith(domain));
-  
+  const isValidReferer = allowedOrigins.some((domain) =>
+    referer?.startsWith(domain)
+  );
+
   if (origin === null && isValidReferer) {
     return true;
   }
-  
+
   if (allowedOrigins.includes(origin)) {
     return true;
   }
@@ -85,7 +87,7 @@ export async function GET(request) {
   // Fetch all playlist items (handle pagination)
   const playlistData = await res.json();
   let nextPageToken = playlistData.nextPageToken;
-  
+
   while (nextPageToken) {
     const res2 = await fetch(
       `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${id}&maxResults=50&pageToken=${nextPageToken}&key=${apiKey}`
@@ -118,10 +120,10 @@ export async function GET(request) {
   });
 
   // Prepare video IDs in batches of 50
-  const videoIds = items.map(item => item.id).filter(Boolean);
+  const videoIds = items.map((item) => item.id).filter(Boolean);
   const batchSize = 50;
   const batches = [];
-  
+
   for (let i = 0; i < videoIds.length; i += batchSize) {
     batches.push(videoIds.slice(i, i + batchSize).join(","));
   }
@@ -130,8 +132,12 @@ export async function GET(request) {
   const details = await Promise.all(
     batches.map(async (ids) => {
       const [contentRes, statsRes] = await Promise.all([
-        fetch(`https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${ids}&key=${apiKey}`),
-        fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${ids}&key=${apiKey}`)
+        fetch(
+          `https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${ids}&key=${apiKey}`
+        ),
+        fetch(
+          `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${ids}&key=${apiKey}`
+        ),
       ]);
 
       const contentData = await contentRes.json();
@@ -141,7 +147,7 @@ export async function GET(request) {
         const statsItem = statsData.items.find((s) => s.id === item.id);
         const duration = item.contentDetails?.duration || null;
         const seconds = convertToSeconds(duration);
-        
+
         return {
           id: item.id,
           duration: seconds,
@@ -173,7 +179,7 @@ export async function GET(request) {
 
   // Filter out videos without duration and apply range
   updatedItems = updatedItems.filter((item) => item.duration !== null);
-  
+
   if (end) {
     updatedItems = updatedItems.filter(
       (item, index) => index >= start - 1 && index <= end - 1
@@ -186,12 +192,12 @@ export async function GET(request) {
   const playlistRes = await fetch(
     `https://www.googleapis.com/youtube/v3/playlists?key=${apiKey}&id=${id}&part=snippet&fields=items(id,snippet(title,channelId,channelTitle,thumbnails))`
   );
-  
+
   let playlistDetails = null;
   if (playlistRes.ok) {
     const playlistInfo = await playlistRes.json();
     const playlistItem = playlistInfo.items?.[0];
-    
+
     if (playlistItem) {
       playlistDetails = {
         id: playlistItem.id,
@@ -209,7 +215,7 @@ export async function GET(request) {
   }
 
   const origin = request.headers.get("origin");
-  
+
   return Response.json(
     {
       playlistData: playlistDetails,

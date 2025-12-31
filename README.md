@@ -5,18 +5,22 @@ A powerful web application to analyze YouTube playlists with detailed statistics
 ## Features
 
 ### Playlist Analysis
+
 - **Total Duration Calculation** - See the complete playlist length with accurate duration
 - **Video Count** - Track the total number of videos in the playlist
 - **Range Selection** - Analyze specific portions of playlists by setting start and end video positions
 - **Playlist Information** - View playlist title, channel details, and thumbnail
 
 ### Statistics and Metrics
+
 - **Aggregate Stats** - Total likes, views, comments across all videos
 - **Average Metrics** - Calculate average duration, likes, views, and comments per video
 - **Per-Video Details** - Individual statistics for each video including duration, likes, views, and comments
 
 ### Sorting Options
+
 Sort playlist videos by multiple criteria:
+
 - Duration (longest to shortest)
 - Views (most to least)
 - Likes (most to least)
@@ -26,7 +30,9 @@ Sort playlist videos by multiple criteria:
 - Original Position
 
 ### Playback Speed Calculator
+
 Calculate watch time at different speeds:
+
 - Normal speed (1x)
 - 1.25x speed
 - 1.5x speed
@@ -34,6 +40,7 @@ Calculate watch time at different speeds:
 - Custom speed options
 
 ### User Interface
+
 - **Dark Mode** - Modern dark theme optimized for viewing
 - **Responsive Design** - Fully mobile-friendly interface
 - **Thumbnail Toggle** - Show or hide video thumbnails to reduce data usage
@@ -44,36 +51,42 @@ Calculate watch time at different speeds:
 
 - **Framework** - [Next.js](https://nextjs.org/) with TypeScript
 - **Styling** - [Tailwind CSS](https://tailwindcss.com/)
-- **UI Components** - [Flowbite React](https://flowbite-react.com/)
+- **UI Components** - [shadcn/ui](https://ui.shadcn.com/)
+- **Icons** - [Lucide React](https://lucide.dev/)
 - **API** - [YouTube Data API v3](https://developers.google.com/youtube/v3)
 - **Hosting** - [Vercel](https://vercel.com)
 
 ## Local Development
 
 ### Prerequisites
+
 - Node.js (v18 or higher)
 - YouTube Data API Key
 
 ### Installation
 
 Clone the repository:
+
 ```bash
 git clone https://github.com/NamanS4ini/YTPlaylistLength
 cd YTPlaylistLength
 ```
 
 Install dependencies:
+
 ```bash
 npm install
 ```
 
 Create a `.env.local` file in the root directory:
+
 ```env
 API_KEY=your_youtube_api_key
 WEBSITE_LINK=http://localhost:3000
 ```
 
 Run the development server:
+
 ```bash
 npm run dev
 ```
@@ -105,6 +118,7 @@ npm start
 ## Privacy
 
 This application prioritizes user privacy:
+
 - No user accounts or authentication required
 - No data sent to external servers (except YouTube API)
 - Bookmarks and preferences stored locally in browser
