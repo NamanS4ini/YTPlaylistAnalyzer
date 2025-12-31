@@ -87,7 +87,7 @@ export default function Homepage() {
   return (
     <main className="min-h-screen max-w-4xl mx-auto bg-zinc-950 text-white px-6 py-24 flex flex-col items-center relative">
       {/* Subtle gradient glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 max-w-[600px] w-full h-[300px] bg-blue-600/10 rounded-full blur-[120px] overflow-hidden pointer-events-none" />
 
       <div className="flex flex-col items-center w-full relative z-10">
         {/* YouTube Logo */}

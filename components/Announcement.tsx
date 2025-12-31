@@ -12,7 +12,7 @@ const Announcement = () => {
   // Edit this array to manage announcements
   const announcements: AnnouncementType[] = [
     {
-      id: 101,
+      id: 1022,
       message: "UI improvements and bug fixes have been made! Enjoy a smoother experience while analyzing your playlists.",
       enabled: true,
     },
@@ -50,15 +50,17 @@ const Announcement = () => {
           {visibleAnnouncements.map((announcement, index) => (
             <Alert
               key={announcement.id}
-              className="bg-zinc-900/95 border-zinc-800 backdrop-blur-sm shadow-lg animate-in slide-in-from-bottom-5 duration-500"
+              className="bg-zinc-900/95 flex items-center border-zinc-800 backdrop-blur-sm shadow-lg animate-in slide-in-from-bottom-5 duration-500"
               style={{
                 animationDelay: `${index * 100}ms`,
               }}
             >
+              <div className="px-4">
               <Info color="aqua" />
+              </div>
               <AlertDescription className="text-zinc-200 pr-8">
                 <div
-                  className="leading-relaxed text-white"
+                  className="leading-relaxed text-sm sm:text-lg text-white"
                   dangerouslySetInnerHTML={{ __html: announcement.message }}
                 />
               </AlertDescription>

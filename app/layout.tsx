@@ -89,10 +89,10 @@ export default function RootLayout({
       >
         <Navbar />
         {children}
-        <Analytics />
         <Toaster className="dark" position="top-center" richColors />
-        <SpeedInsights />
         <Announcement />
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );
