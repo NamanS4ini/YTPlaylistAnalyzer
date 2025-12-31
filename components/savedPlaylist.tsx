@@ -4,14 +4,9 @@ import Empty from "@/lib/Empty";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import PlaylistCard from "./ui/playlistCard";
+import { Playlist } from "@/lib/types";
 
-interface Playlist {
-  id: string;
-  title: string;
-  channelTitle: string;
-  thumbnail: string;
-  channelId: string;
-}
+
 
 export default function SavedPlaylist() {
   const [thumbnail, setThumbnail] = useState<boolean>(false);

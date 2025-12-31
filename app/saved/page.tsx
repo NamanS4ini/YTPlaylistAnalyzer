@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import SavedPlaylist from "@/components/SavedPlaylist";
 
+
 export const metadata: Metadata = {
   title: "Saved Playlists",
   description: "View, manage, and track the total duration of your saved YouTube playlists. Keep all your favorite playlists organized in one place with detailed analytics and quick access controls.",
