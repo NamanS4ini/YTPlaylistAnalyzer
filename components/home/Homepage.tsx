@@ -5,10 +5,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import { useState } from "react";
-import { Bounce, ToastContainer, toast } from "react-toastify";
+import { Bounce, toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { FaYoutube } from "react-icons/fa";
-import Faq from "./Faq";
 import Recent from "./Recent";
 
 export default function Homepage() {

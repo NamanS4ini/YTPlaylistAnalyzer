@@ -182,7 +182,7 @@ export default function PlaylistDetails() {
     // Keep only latest 10
     const limitedPlaylists = filteredPlaylists.slice(0, 10);
     localStorage.setItem('recentPlaylists', JSON.stringify(limitedPlaylists));
-  }, [playlistData]);
+  }, [playlistData, videoData]);
 
   if (videoData === null && error === null) {
     return (
