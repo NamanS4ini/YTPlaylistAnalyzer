@@ -11,7 +11,7 @@ import Link from "next/link";
 
 export default function NavigationMenuDemo() {
   return (
-    <div className="fixed backdrop-blur-sm bg-black/70 z-9999 flex justify-center p-2 w-full top-0">
+    <div className="fixed backdrop-blur-sm bg-black/70 z-50 flex justify-center p-2 w-full top-0">
       <div className="flex items-center justify-between w-full max-w-7xl gap-4">
         <div>
           <Link href="/">

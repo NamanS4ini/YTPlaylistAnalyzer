@@ -87,12 +87,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased text-white bg-zinc-900`}
       >
-        <Navbar />
         {children}
         <Toaster className="dark" position="top-center" richColors />
         <Announcement />
         <SpeedInsights />
         <Analytics />
+        <Navbar />
       </body>
     </html>
   );
