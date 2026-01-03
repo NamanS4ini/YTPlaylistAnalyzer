@@ -1,5 +1,7 @@
 import PlaylistDetails from "@/components/playlistDetails/PlaylistDetails";
 import { Metadata } from "next";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import React from "react";
 
 export const metadata: Metadata = {
@@ -20,10 +22,27 @@ export const metadata: Metadata = {
   },
 };
 
-const page = () => {
+const page = async ({ params, searchParams }: { params: { url: string }, searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) => {
+  const session = await auth()
+  const resolvedSearchParams = await searchParams;
+  let id = (await params).url;
+
+  // Check if playlist ID is in query parameters first
+  const listParam = resolvedSearchParams.list as string | undefined;
+  if (listParam) {
+    id = listParam;
+  } else if (id.includes("list%3D")) {
+    // %3D means '='
+    // Clean the URL by removing playlist identifiers
+    id = id.split("list%3D")[1];
+  }
+
+  if ((id == "WL" || id == "LL") && !session) {
+    redirect("/signin");
+  }
   return (
     <>
-      <PlaylistDetails />
+      <PlaylistDetails id={id} start={(resolvedSearchParams.start as string) || "0"} end={(resolvedSearchParams.end as string) || "5000"} />
     </>
   );
 };

@@ -6,32 +6,16 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { BookmarkIcon, ArrowRight } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
-import { useParams } from "next/navigation";
-import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaExclamationTriangle } from "react-icons/fa";
 import { ImageLoaderProps } from "next/image";
 import { VideoData, PlayListData, PlaylistCard } from "@/lib/types";
 import DetailsSkeleton from "./DetailsSkeleton";
 
-export default function PlaylistDetails() {
-  const params = useParams();
-  const searchParams = useSearchParams();
-
-  let id = params.url as string;
-
-  // Check if playlist ID is in query parameters first
-  const listParam = searchParams.get("list");
-  if (listParam) {
-    id = listParam;
-  } else if (id.includes("list%3D")) {
-    // %3D means '='
-    // Clean the URL by removing playlist identifiers
-    id = id.split("list%3D")[1];
-  }
-
-  const start = searchParams.get("start") || "0";
-  const end = searchParams.get("end") || "5000";
+export default function PlaylistDetails({ id, start, end }: { id?: string, start?: string, end?: string }) {
+  start = start || "0";
+  end = end || "5000";
+  console.log(start, end);
 
   const [videoData, setVideoData] = useState<VideoData[] | null>(null);
   const [playlistData, setPlaylistData] = useState<PlayListData | null>(null);
@@ -137,7 +121,13 @@ export default function PlaylistDetails() {
       return;
     }
 
-    fetch(`/api/details?id=${id}&start=${start}&end=${end}`)
+    // Detect if it's a special playlist (Watch Later or Liked Videos)
+    const isSpecialPlaylist = id === "WL" || id === "LL";
+    const apiEndpoint = isSpecialPlaylist
+      ? `/api/special-playlist?type=${id}&start=${start}&end=${end}`
+      : `/api/details?id=${id}&start=${start}&end=${end}`;
+
+    fetch(apiEndpoint)
       .then(async (res) => {
         if (!res.ok) {
           const err = await res.json().catch(() => null);
@@ -178,11 +168,11 @@ export default function PlaylistDetails() {
       channelId: playlistData.channelId,
       totalDuration: videoData
         ? convertToHrs(
-            videoData.reduce(
-              (acc, item) => acc + (item.duration ? Number(item.duration) : 0),
-              0
-            )
+          videoData.reduce(
+            (acc, item) => acc + (item.duration ? Number(item.duration) : 0),
+            0
           )
+        )
         : "Unknown",
     };
     // Save to recent playlists in localStorage
@@ -267,16 +257,16 @@ export default function PlaylistDetails() {
               </a>
             </h1>
             <div>
-            <Toggle
-              onClick={handleBookmark}
-              size="lg"
-              variant="outline"
-              className="dark text-lg cursor-pointer"
-            >
-              <BookmarkIcon fill={isBookmarked ? "white" : "black"} />
-              {isBookmarked ? " Bookmarked" : " Bookmark"}
-            </Toggle>
-              </div>
+              <Toggle
+                onClick={handleBookmark}
+                size="lg"
+                variant="outline"
+                className="dark text-lg cursor-pointer"
+              >
+                <BookmarkIcon fill={isBookmarked ? "white" : "black"} />
+                {isBookmarked ? " Bookmarked" : " Bookmark"}
+              </Toggle>
+            </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-4 p-5 max-w-6xl w-full mx-auto">
             <div className="bg-zinc-900 hover:bg-zinc-800 items-center justify-center border h-fit  border-zinc-800 rounded-2xl p-8 shadow-xl w-full max-w-md space-y-6">
