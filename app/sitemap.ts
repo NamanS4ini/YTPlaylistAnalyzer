@@ -13,5 +13,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
       priority: 0.8,
     },
+    {
+      url: "https://ytpla.in/policy",
+      lastModified: new Date(),
+      priority: 0.6,
+    },
+    {
+      url: "https://ytpla.in/term",
+      lastModified: new Date(),
+      priority: 0.6,
+    },
   ];
 }
