@@ -12,13 +12,8 @@ const Announcement = () => {
   // Edit this array to manage announcements
   const announcements: AnnouncementType[] = [
     {
-      id: 1022,
-      message: "UI improvements and bug fixes have been made! Enjoy a smoother experience while analyzing your playlists.",
-      enabled: true,
-    },
-    {
-      id: 1023,
-      message: "You can now login to analyze Liked Videos playlists! You might see a warning while logging in since the app is being reviewed by Google.",
+      id: 1024,
+      message: "You can now sign in to analyze your Liked Videos playlist.\nDuring sign-in, you may see a Google warning because the app is currently under review. This is expected and safe to proceed.",
       enabled: true,
     },
   ];
