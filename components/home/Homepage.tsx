@@ -250,7 +250,7 @@ export default function Homepage() {
           </a>
         </div>
         <p className="text-center text-xs text-zinc-500 mt-4">
-          © {new Date().getFullYear()} YouTube Playlist Analyzer. All rights reserved.
+          © {new Date().getFullYear()}  YTPLA. All rights reserved.
         </p>
       </footer>
     </main>
