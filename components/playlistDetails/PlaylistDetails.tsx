@@ -444,13 +444,30 @@ export default function PlaylistDetails({ id, start, end }: { id?: string, start
                     );
 
                     // Show ellipsis or page 2
+                    if (totalPages === 2) {
+                      // For 2 pages, just show page 2 and skip to the end
+                      pages.push(
+                        <PaginationItem key={2}>
+                          <PaginationLink
+                            onClick={() => setCurrentPage(2)}
+                            isActive={currentPage === 2}
+                            className="cursor-pointer"
+                          >
+                            2
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                      return pages;
+                    }
+
                     if (showEllipsisStart) {
                       pages.push(
                         <PaginationItem key="ellipsis-start">
                           <PaginationEllipsis />
                         </PaginationItem>
                       );
-                    } else if (totalPages > 1) {
+                    } else if (totalPages > 2) {
+                      // Only add page 2 if we have more than 2 pages
                       pages.push(
                         <PaginationItem key={2}>
                           <PaginationLink
@@ -512,7 +529,8 @@ export default function PlaylistDetails({ id, start, end }: { id?: string, start
                           <PaginationEllipsis />
                         </PaginationItem>
                       );
-                    } else if (totalPages > 2 && currentPage !== totalPages - 1) {
+                    } else if (totalPages > 3 && currentPage !== totalPages - 1) {
+                      // Only add second-to-last page if we have more than 3 pages and it's not already shown
                       pages.push(
                         <PaginationItem key={totalPages - 1}>
                           <PaginationLink
@@ -526,8 +544,8 @@ export default function PlaylistDetails({ id, start, end }: { id?: string, start
                       );
                     }
 
-                    // Always show last page (if more than 1 page)
-                    if (totalPages > 1) {
+                    // Always show last page (if more than 2 pages and not already shown)
+                    if (totalPages > 2) {
                       pages.push(
                         <PaginationItem key={totalPages}>
                           <PaginationLink
