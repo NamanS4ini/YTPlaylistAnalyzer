@@ -90,7 +90,6 @@ export default function RootLayout({
         <Navbar />
         {children}
         <Toaster className="dark" position="top-center" richColors />
-        <Announcement />
         <SpeedInsights />
         <Analytics />
       </body>

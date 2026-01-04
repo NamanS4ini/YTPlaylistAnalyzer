@@ -1,6 +1,7 @@
 import React from "react";
 import { Metadata } from "next";
 import Homepage from "@/components/home/Homepage";
+import Announcement from "@/components/Announcement";
 import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
@@ -18,6 +19,7 @@ const page = async () => {
   return (
     <div className="bg-zinc-950">
       <Homepage session={session} />
+      <Announcement />
     </div>
   );
 };

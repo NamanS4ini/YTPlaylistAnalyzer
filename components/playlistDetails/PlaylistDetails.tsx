@@ -414,7 +414,7 @@ export default function PlaylistDetails({ id, start, end }: { id?: string, start
 
           {/* Pagination Controls */}
           {videoData.length > videosPerPage && (
-            <div className="flex justify-center mt-8 mb-12">
+            <div className="flex justify-center mt-8 mb-28">
               <Pagination className="dark">
                 <PaginationContent>
                   <PaginationItem>
