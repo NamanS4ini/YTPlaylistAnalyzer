@@ -7,13 +7,14 @@ import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Heart } from "lucide-react";
 import Faq from "./Faq";
 import Recent from "./Recent";
 import Image from "next/image";
 import Link from "next/link";
+import type { Session } from "next-auth";
 
-export default function Homepage() {
+export default function Homepage({ session }: { session: Session | null }) {
   const router = useRouter();
   const [validated, setValidated] = useState(false);
   const validateURL = (url: string) => {
@@ -212,6 +213,31 @@ export default function Homepage() {
               </Button>
             )}
           </div>
+
+          {/* Liked Videos Card - Only shown when logged in */}
+          {session?.user && (
+            <div className="mt-6 p-4 border border-zinc-800 bg-gradient-to-br from-pink-950/30 to-zinc-900 rounded-lg">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-pink-500/10 rounded-lg">
+                  <Heart className="h-5 w-5 text-pink-400" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-white mb-1">Your Liked Videos</h3>
+                  <p className="text-sm text-zinc-400 mb-3">
+                    Analyze your personal collection of liked videos with detailed statistics.
+                  </p>
+                  <Link href="/LL">
+                    <Button
+                      variant="outline"
+                      className="dark bg-pink-600/20 border-pink-600/50 hover:bg-pink-600/30 text-pink-300 hover:text-pink-200"
+                    >
+                      View Liked Videos →
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

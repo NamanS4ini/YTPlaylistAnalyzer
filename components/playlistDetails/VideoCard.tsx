@@ -72,15 +72,16 @@ export default function VideoCard({ item, playlistId, thumbnail, convertToHrs, c
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-400">
                             {item.channelTitle?.charAt(0).toUpperCase() || "?"}
                         </div>
-                        <a
-                            href={`https://www.youtube.com/channel/${item.channelId}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors truncate"
-                            onClick={(e) => e.stopPropagation()}
+                        <button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                window.open(`https://www.youtube.com/channel/${item.channelId}`, '_blank', 'noopener,noreferrer');
+                            }}
+                            className="text-sm cursor-pointer text-zinc-400 hover:text-zinc-200 transition-colors truncate text-left"
                         >
                             {item.channelTitle}
-                        </a>
+                        </button>
                     </div>
 
                     {/* Stats Grid */}

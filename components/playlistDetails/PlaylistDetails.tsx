@@ -10,6 +10,15 @@ import StatisticsCards from "./StatisticsCards";
 import VideoCard from "./VideoCard";
 import SortControls from "./SortControls";
 import ErrorDisplay from "./ErrorDisplay";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 export default function PlaylistDetails({ id, start, end }: { id?: string, start?: string, end?: string }) {
   start = start || "0";
@@ -23,6 +32,8 @@ export default function PlaylistDetails({ id, start, end }: { id?: string, start
   const [thumbnail, setThumbnail] = useState<boolean>(false);
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
   const [speed, setSpeed] = useState<string>("1");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const videosPerPage = 30;
 
   // Use custom image loader to optimize thumbnail loading
   const wsrvLoader = ({ src, width, quality }: ImageLoaderProps) => {
@@ -63,6 +74,7 @@ export default function PlaylistDetails({ id, start, end }: { id?: string, start
       duration: (a, b) => Number(b.duration || 0) - Number(a.duration || 0),
     };
     setReversed(false);
+    setCurrentPage(1); // Reset to first page when sorting
     const sortFunction = sortFunctions[e.target.value];
     if (sortFunction) {
       setVideoData([...videoData].sort(sortFunction));
@@ -73,6 +85,7 @@ export default function PlaylistDetails({ id, start, end }: { id?: string, start
     if (!videoData) return;
     setVideoData([...videoData].reverse());
     setReversed(!Reversed);
+    setCurrentPage(1); // Reset to first page when reversing
   }
 
   // Handle bookmark
@@ -374,19 +387,181 @@ export default function PlaylistDetails({ id, start, end }: { id?: string, start
             handelReverse={handelReverse}
             Reversed={Reversed}
           />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5 max-w-6xl w-full mx-auto">
-            {videoData.map((item) => (
-              <VideoCard
-                key={`${item.id}${item.position}`}
-                item={item}
-                playlistId={playlistData?.id}
-                thumbnail={thumbnail}
-                convertToHrs={convertToHrs}
-                convertDate={convertDate}
-                wsrvLoader={wsrvLoader}
-              />
-            ))}
+
+          {/* Pagination Info */}
+          <div className="flex justify-center items-center gap-2 text-sm text-zinc-400 mt-4">
+            <span>
+              Showing {Math.min((currentPage - 1) * videosPerPage + 1, videoData.length)}-
+              {Math.min(currentPage * videosPerPage, videoData.length)} of {videoData.length} videos
+            </span>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5 max-w-6xl w-full mx-auto">
+            {videoData
+              .slice((currentPage - 1) * videosPerPage, currentPage * videosPerPage)
+              .map((item) => (
+                <VideoCard
+                  key={`${item.id}${item.position}`}
+                  item={item}
+                  playlistId={playlistData?.id}
+                  thumbnail={thumbnail}
+                  convertToHrs={convertToHrs}
+                  convertDate={convertDate}
+                  wsrvLoader={wsrvLoader}
+                />
+              ))}
+          </div>
+
+          {/* Pagination Controls */}
+          {videoData.length > videosPerPage && (
+            <div className="flex justify-center mt-8 mb-12">
+              <Pagination className="dark">
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+
+                  {(() => {
+                    const totalPages = Math.ceil(videoData.length / videosPerPage);
+                    const pages = [];
+                    const showEllipsisStart = currentPage > 3;
+                    const showEllipsisEnd = currentPage < totalPages - 2;
+
+                    // Always show first page
+                    pages.push(
+                      <PaginationItem key={1}>
+                        <PaginationLink
+                          onClick={() => setCurrentPage(1)}
+                          isActive={currentPage === 1}
+                          className="cursor-pointer"
+                        >
+                          1
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+
+                    // Show ellipsis or page 2
+                    if (showEllipsisStart) {
+                      pages.push(
+                        <PaginationItem key="ellipsis-start">
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      );
+                    } else if (totalPages > 1) {
+                      pages.push(
+                        <PaginationItem key={2}>
+                          <PaginationLink
+                            onClick={() => setCurrentPage(2)}
+                            isActive={currentPage === 2}
+                            className="cursor-pointer"
+                          >
+                            2
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                    }
+
+                    // Show current page and neighbors (if not already shown)
+                    if (currentPage > 2 && currentPage < totalPages - 1) {
+                      if (currentPage > 3) {
+                        pages.push(
+                          <PaginationItem key={currentPage - 1}>
+                            <PaginationLink
+                              onClick={() => setCurrentPage(currentPage - 1)}
+                              className="cursor-pointer"
+                            >
+                              {currentPage - 1}
+                            </PaginationLink>
+                          </PaginationItem>
+                        );
+                      }
+
+                      pages.push(
+                        <PaginationItem key={currentPage}>
+                          <PaginationLink
+                            onClick={() => setCurrentPage(currentPage)}
+                            isActive={true}
+                            className="cursor-pointer"
+                          >
+                            {currentPage}
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+
+                      if (currentPage < totalPages - 2) {
+                        pages.push(
+                          <PaginationItem key={currentPage + 1}>
+                            <PaginationLink
+                              onClick={() => setCurrentPage(currentPage + 1)}
+                              className="cursor-pointer"
+                            >
+                              {currentPage + 1}
+                            </PaginationLink>
+                          </PaginationItem>
+                        );
+                      }
+                    }
+
+                    // Show ellipsis or second-to-last page
+                    if (showEllipsisEnd) {
+                      pages.push(
+                        <PaginationItem key="ellipsis-end">
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      );
+                    } else if (totalPages > 2 && currentPage !== totalPages - 1) {
+                      pages.push(
+                        <PaginationItem key={totalPages - 1}>
+                          <PaginationLink
+                            onClick={() => setCurrentPage(totalPages - 1)}
+                            isActive={currentPage === totalPages - 1}
+                            className="cursor-pointer"
+                          >
+                            {totalPages - 1}
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                    }
+
+                    // Always show last page (if more than 1 page)
+                    if (totalPages > 1) {
+                      pages.push(
+                        <PaginationItem key={totalPages}>
+                          <PaginationLink
+                            onClick={() => setCurrentPage(totalPages)}
+                            isActive={currentPage === totalPages}
+                            className="cursor-pointer"
+                          >
+                            {totalPages}
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                    }
+
+                    return pages;
+                  })()}
+
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() =>
+                        setCurrentPage((prev) =>
+                          Math.min(prev + 1, Math.ceil(videoData.length / videosPerPage))
+                        )
+                      }
+                      className={
+                        currentPage === Math.ceil(videoData.length / videosPerPage)
+                          ? "pointer-events-none opacity-50"
+                          : "cursor-pointer"
+                      }
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
         </div>
       </div>
     );
