@@ -22,7 +22,7 @@ export default function SignIn() {
                 <DialogHeader>
                     <DialogTitle className="text-white text-2xl">Sign In with Google</DialogTitle>
                     <DialogDescription className="text-zinc-400">
-                        Access your Watch Later and Liked playlists
+                        Access your Liked Videos playlist
                     </DialogDescription>
                 </DialogHeader>
 
@@ -50,9 +50,11 @@ export default function SignIn() {
                     <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-4">
                         <h4 className="font-semibold text-white mb-2">Why sign in?</h4>
                         <p className="text-sm text-zinc-400">
-                            YouTube restricts access to <span className="text-white font-medium">Watch Later</span> and{" "}
-                            <span className="text-white font-medium">Liked Videos</span> playlists.
-                            Authentication is required only to analyze these special playlists.
+                            YouTube restricts access to <span className="text-white font-medium">Liked Videos</span> playlist.
+                            Authentication is required to analyze this special playlist.
+                        </p>
+                        <p className="text-sm text-orange-400 mt-2">
+                            <strong>Note:</strong> Watch Later is not accessible via YouTube&apos;s API due to privacy restrictions.
                         </p>
                     </div>
 

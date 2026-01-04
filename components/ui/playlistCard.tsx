@@ -17,7 +17,7 @@ const PlaylistCard = ({
     >
       <Link href={`/${playlist.id}`} rel="noopener noreferrer">
         <div className="relative mb-2">
-          {thumbnail && (
+          {thumbnail && playlist.thumbnail && (
             <Image
               src={playlist.thumbnail}
               width={400}

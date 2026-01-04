@@ -38,9 +38,8 @@ export function SignOut() {
                 <div className="py-4">
                     <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-4">
                         <p className="text-sm text-zinc-300">
-                            You'll need to sign in again to access your{" "}
-                            <span className="text-white font-medium">Watch Later</span> and{" "}
-                            <span className="text-white font-medium">Liked Videos</span> playlists.
+                            You&apos;ll need to sign in again to access your{" "}
+                            <span className="text-white font-medium">Liked Videos</span> playlist.
                         </p>
                     </div>
                 </div>

@@ -6,6 +6,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import Link from "next/link";
 
 const Faq = () => {
   return (
@@ -104,6 +105,31 @@ const Faq = () => {
               </AccordionItem>
 
               <AccordionItem value="item-7">
+                <AccordionTrigger className="text-md cursor-pointer text-zinc-300 hover:text-white">
+                  How can I analyze Watch Later or private playlists?
+                </AccordionTrigger>
+                <AccordionContent className="text-md text-zinc-400">
+                  YouTube&apos;s API doesn&apos;t allow access to Watch Later or private playlists. However, you can export your data from{" "}
+                  <a
+                    href="https://takeout.google.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline text-blue-400 hover:text-blue-300"
+                  >
+                    Google Takeout
+                  </a>{" "}
+                  and{" "}
+                  <Link
+                    href="/upload"
+                    className="underline text-orange-400 hover:text-orange-300 font-medium"
+                  >
+                    upload it here
+                  </Link>{" "}
+                  for analysis - completely in your browser!
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-8">
                 <AccordionTrigger className="text-md cursor-pointer text-zinc-300 hover:text-white">
                   Found a bug or have a suggestion?
                 </AccordionTrigger>

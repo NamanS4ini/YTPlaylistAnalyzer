@@ -1,21 +1,19 @@
 "use client";
-import Image from "next/image";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { BookmarkIcon, ArrowRight } from "lucide-react";
+import { BookmarkIcon } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import { useEffect, useState } from "react";
-import { FaExclamationTriangle } from "react-icons/fa";
 import { ImageLoaderProps } from "next/image";
 import { VideoData, PlayListData, PlaylistCard } from "@/lib/types";
 import DetailsSkeleton from "./DetailsSkeleton";
+import { toast } from "sonner";
+import StatisticsCards from "./StatisticsCards";
+import VideoCard from "./VideoCard";
+import SortControls from "./SortControls";
+import ErrorDisplay from "./ErrorDisplay";
 
 export default function PlaylistDetails({ id, start, end }: { id?: string, start?: string, end?: string }) {
   start = start || "0";
   end = end || "5000";
-  console.log(start, end);
 
   const [videoData, setVideoData] = useState<VideoData[] | null>(null);
   const [playlistData, setPlaylistData] = useState<PlayListData | null>(null);
@@ -121,6 +119,119 @@ export default function PlaylistDetails({ id, start, end }: { id?: string, start
       return;
     }
 
+    let toastId: string | number | undefined;
+
+    // Set a timeout to show toast if loading takes too long
+    const loadingTimeout = setTimeout(() => {
+      toastId = toast.info("This playlist seems large and will take some time to load. Please wait...", {
+        duration: Infinity, // Keep toast until manually dismissed
+      });
+    }, 3000); // Show toast after 3 seconds
+
+    // Handle uploaded playlists from Google Takeout
+    if (id === "uploaded") {
+      const data = localStorage.getItem("uploadedPlaylist");
+      const fileName = localStorage.getItem("uploadedPlaylistName");
+
+      if (!data) {
+        clearTimeout(loadingTimeout);
+        setError(404);
+        setErrorMsg("No playlist data found. Please upload a file first.");
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(data);
+
+        // Parse Google Takeout CSV format: [{videoId, timestamp}]
+        const videos: VideoData[] = parsed.map((item: { videoId: string; timestamp?: string }, index: number) => ({
+          id: item.videoId,
+          title: "Loading...",
+          thumbnail: `https://i.ytimg.com/vi/${item.videoId}/mqdefault.jpg`,
+          channelTitle: "Unknown Channel",
+          channelId: null,
+          publishedAt: item.timestamp || new Date().toISOString(),
+          position: index,
+          duration: null,
+          likes: null,
+          views: null,
+          comments: null,
+        }));
+
+        setVideoData(videos);
+        setPlaylistData({
+          id: "uploaded",
+          title: fileName?.replace(".csv", "").replace(".json", "") || "Uploaded Playlist",
+          thumbnail: videos[0]?.thumbnail || "",
+          channelTitle: "Google Takeout",
+          channelId: "",
+          totalVideos: videos.length,
+          totalDuration: 0,
+        });
+
+        // Fetch video details from YouTube API
+        const videoIds = videos.map(v => v.id).filter(Boolean);
+        const batchSize = 50;
+        const batches: string[] = [];
+
+        for (let i = 0; i < videoIds.length; i += batchSize) {
+          batches.push(videoIds.slice(i, i + batchSize).join(","));
+        }
+
+        Promise.all(
+          batches.map(async (ids) => {
+            const res = await fetch(`/api/videos?ids=${ids}`);
+            const data = await res.json();
+            return data.items || [];
+          })
+        )
+          .then((details) => {
+            clearTimeout(loadingTimeout);
+            if (toastId) toast.dismiss(toastId);
+
+            const flatDetails = details.flat();
+            let totalDuration = 0;
+
+            const updatedVideos = videos.map((video) => {
+              const detail = flatDetails.find((d: { id: string }) => d.id === video.id);
+              if (detail) {
+                const duration = detail.duration || 0;
+                totalDuration += duration;
+                return {
+                  ...video,
+                  title: detail.title || video.title,
+                  thumbnail: detail.thumbnail || video.thumbnail,
+                  channelTitle: detail.channelTitle || video.channelTitle,
+                  channelId: detail.channelId || video.channelId,
+                  duration,
+                  likes: detail.likes,
+                  views: detail.views,
+                  comments: detail.comments,
+                };
+              }
+              return video;
+            });
+
+            setVideoData(updatedVideos);
+            setPlaylistData(prev => prev ? { ...prev, totalDuration } : null);
+          })
+          .catch(() => {
+            clearTimeout(loadingTimeout);
+            if (toastId) toast.dismiss(toastId);
+            console.error("Failed to fetch video details");
+          });
+      } catch {
+        clearTimeout(loadingTimeout);
+        setError(400);
+        setErrorMsg("Failed to parse uploaded file. Please ensure it's a valid format.");
+      }
+
+      return () => {
+        clearTimeout(loadingTimeout);
+        if (toastId) toast.dismiss(toastId);
+      };
+    }
+
     // Detect if it's a special playlist (Watch Later or Liked Videos)
     const isSpecialPlaylist = id === "WL" || id === "LL";
     const apiEndpoint = isSpecialPlaylist
@@ -129,6 +240,8 @@ export default function PlaylistDetails({ id, start, end }: { id?: string, start
 
     fetch(apiEndpoint)
       .then(async (res) => {
+        clearTimeout(loadingTimeout); // Clear timeout when response arrives
+        if (toastId) toast.dismiss(toastId); // Dismiss toast if it was shown
         if (!res.ok) {
           const err = await res.json().catch(() => null);
           setError(res.status);
@@ -143,9 +256,19 @@ export default function PlaylistDetails({ id, start, end }: { id?: string, start
         setPlaylistData(data.playlistData);
       })
       .catch((err) => {
+        clearTimeout(loadingTimeout); // Clear timeout on error
+        if (toastId) toast.dismiss(toastId); // Dismiss toast on error
         setError(err.message);
       });
 
+    // Cleanup timeout and toast on unmount
+    return () => {
+      clearTimeout(loadingTimeout);
+      if (toastId) toast.dismiss(toastId);
+    };
+  }, [id, start, end]);
+
+  useEffect(() => {
     // check if current playlist is bookmarked
     setThumbnail(JSON.parse(localStorage.getItem("thumbnail") || "false"));
     const savedPlaylists = JSON.parse(
@@ -163,9 +286,9 @@ export default function PlaylistDetails({ id, start, end }: { id?: string, start
     const currentPlaylist: PlaylistCard = {
       id: playlistData.id,
       title: playlistData.title,
-      thumbnail: playlistData.thumbnail,
+      thumbnail: playlistData.thumbnail || "",
       channelTitle: playlistData.channelTitle,
-      channelId: playlistData.channelId,
+      channelId: playlistData.channelId || "",
       totalDuration: videoData
         ? convertToHrs(
           videoData.reduce(
@@ -197,48 +320,9 @@ export default function PlaylistDetails({ id, start, end }: { id?: string, start
       </div>
     );
   }
+
   if (error) {
-    return (
-      <main className="min-h-dvh md:min-h-screen bg-zinc-950 text-white flex flex-col items-center justify-center px-6 text-center">
-        <FaExclamationTriangle className="text-yellow-500 text-5xl mb-6" />
-
-        <h1 className="text-3xl font-bold mb-2">Something went wrong!</h1>
-
-        <p className="text-zinc-400 mb-4 max-w-md">
-          {error === 404
-            ? "The playlist could not be found. It may be private, deleted, or the URL might be incorrect."
-            : error === 400
-              ? "Please confirm that the playlist ID and range parameters are correct and valid."
-              : "Unable to load the playlist data. This might be caused by connectivity issues or incorrect request parameters."}
-        </p>
-
-        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 mb-6 min-w-60 max-w-md">
-          <p className="text-sm text-zinc-500 font-bold mb-2">Error Details:</p>
-          <code className="text-red-400 text-sm font-bold wrap-break-word">
-            {error}: {errorMsg}
-          </code>
-        </div>
-
-        <p className="text-sm text-zinc-400 mb-6 max-w-md">
-          {error === 404
-            ? "Double-check the link and make sure it's a valid public playlist."
-            : "Please try again or check your input parameters."}
-        </p>
-
-        <div className="flex gap-3 flex-col sm:flex-row">
-          <Button
-            className="cursor-pointer dark"
-            onClick={() => window.location.reload()}
-          >
-            Reload Page
-          </Button>
-
-          <Link href="/">
-            <Button className="cursor-pointer">Back to Home</Button>
-          </Link>
-        </div>
-      </main>
-    );
+    return <ErrorDisplay error={error} errorMsg={errorMsg || ""} id={id} />;
   }
 
   if (videoData) {
@@ -247,322 +331,60 @@ export default function PlaylistDetails({ id, start, end }: { id?: string, start
         <div className="w-full max-w-6xl mx-auto">
           <div className="flex items-center justify-between gap-4 py-5">
             <h1 className="text-2xl md:text-4xl font-bold">
-              <a
-                className="hover:underline"
-                href={`https://www.youtube.com/playlist?list=${playlistData?.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {playlistData?.title}
-              </a>
-            </h1>
-            <div>
-              <Toggle
-                onClick={handleBookmark}
-                size="lg"
-                variant="outline"
-                className="dark text-lg cursor-pointer"
-              >
-                <BookmarkIcon fill={isBookmarked ? "white" : "black"} />
-                {isBookmarked ? " Bookmarked" : " Bookmark"}
-              </Toggle>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-4 p-5 max-w-6xl w-full mx-auto">
-            <div className="bg-zinc-900 hover:bg-zinc-800 items-center justify-center border h-fit  border-zinc-800 rounded-2xl p-8 shadow-xl w-full max-w-md space-y-6">
-              <p className="mt-1 text-xl flex flex-col">
-                Total Videos:
-                <span className="font-bold ">
-                  {videoData.length.toLocaleString("en-GB")}
-                </span>
-              </p>
-              <p className="mt-1 text-xl flex flex-col">
-                Total Duration:
-                <span className="font-bold ">
-                  {convertToHrs(
-                    videoData.reduce(
-                      (acc, item) =>
-                        acc + (item.duration ? Number(item.duration) : 0),
-                      0
-                    )
-                  )}
-                </span>
-              </p>
-              <p className="mt-1 text-xl flex flex-col">
-                Average Duration:
-                <span className="font-bold ">
-                  {convertToHrs(
-                    Math.round(
-                      videoData.reduce(
-                        (acc, item) =>
-                          acc + (item.duration ? Number(item.duration) : 0),
-                        0
-                      ) / videoData.length
-                    )
-                  )}
-                </span>
-              </p>
-            </div>
-            <div className="bg-zinc-900 hover:bg-zinc-800 items-center h-fit justify-center border border-zinc-800 rounded-2xl p-8 shadow-xl w-full max-w-md space-y-6">
-              <p className="mt-1 text-xl flex flex-col">
-                total likes:
-                <span className="font-bold ">
-                  {videoData
-                    .reduce((acc, item) => acc + (item.likes || 0), 0)
-                    .toLocaleString("en-GB")}
-                </span>
-              </p>
-              <p className="mt-1 text-xl flex flex-col">
-                total views:
-                <span className="font-bold ">
-                  {videoData
-                    .reduce((acc, item) => acc + (item.views || 0), 0)
-                    .toLocaleString("en-GB")}
-                </span>
-              </p>
-            </div>
-            <div className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-2xl p-8 shadow-xl w-full max-w-md space-y-6">
-              <p className="text-xl flex items-center gap-2">
-                Playback Speed <ArrowRight />
-              </p>
-              <p>
-                1.25x:
-                <span className="font-bold ">
-                  {convertToHrs(
-                    Math.round(
-                      videoData.reduce(
-                        (acc, item) =>
-                          acc + (item.duration ? Number(item.duration) : 0),
-                        0
-                      ) / 1.25
-                    )
-                  )}
-                </span>
-              </p>
-              <p>
-                1.50x:
-                <span className="font-bold ">
-                  {" "}
-                  {convertToHrs(
-                    Math.round(
-                      videoData.reduce(
-                        (acc, item) =>
-                          acc + (item.duration ? Number(item.duration) : 0),
-                        0
-                      ) / 1.5
-                    )
-                  )}
-                </span>{" "}
-              </p>
-              <p>
-                1.75x:
-                <span className="font-bold ">
-                  {" "}
-                  {convertToHrs(
-                    Math.round(
-                      videoData.reduce(
-                        (acc, item) =>
-                          acc + (item.duration ? Number(item.duration) : 0),
-                        0
-                      ) / 1.75
-                    )
-                  )}
-                </span>{" "}
-              </p>
-              <p>
-                2.00x:
-                <span className="font-bold ">
-                  {" "}
-                  {convertToHrs(
-                    Math.round(
-                      videoData.reduce(
-                        (acc, item) =>
-                          acc + (item.duration ? Number(item.duration) : 0),
-                        0
-                      ) / 2.0
-                    )
-                  )}
-                </span>{" "}
-              </p>
-              <p>
-                <input
-                  className="w-36 p-2 border border-zinc-500"
-                  type="number"
-                  placeholder="custom speed"
-                  onChange={(e) => setSpeed(e.target.value)}
-                  value={speed}
-                />
-                &nbsp;:&nbsp;
-                <span className="font-bold ">
-                  {convertToHrs(
-                    Math.round(
-                      videoData.reduce(
-                        (acc, item) =>
-                          acc + (item.duration ? Number(item.duration) : 0),
-                        0
-                      ) / (parseFloat(speed) || 1)
-                    )
-                  )}
-                </span>
-              </p>
-            </div>
-          </div>
-        </div>
-        <div>
-          <h2 className="text-4xl flex md:flex-row items-center gap-5 flex-col justify-between font-bold">
-            Videos in Playlist
-            <span>
-              <Switch
-                id="thumbnail"
-                onClick={() => {
-                  handelThumb();
-                }}
-                defaultChecked={thumbnail}
-                className="dark cursor-pointer"
-              />
-              <Label
-                htmlFor="thumbnail"
-                className="inline-flex items-center cursor-pointer"
-              >
-                <span className="ms-3 text-2xl font-medium dark">
-                  Thumbnails
-                </span>
-              </Label>
-            </span>
-          </h2>
-          <div className="flex gap-10 justify-center md:justify-start items-center p-5">
-            <h2 className="text-2xl flex justify-between font-bold">
-              Sort By:{" "}
-            </h2>
-            <div className="flex gap-4 justify-center items-center">
-              <select
-                defaultValue="position"
-                onChange={(e) => handelSort(e)}
-                className="text-sm rounded-lg dark block p-2.5 bg-zinc-900 border-zinc-800 placeholder-zinc-400 text-white"
-              >
-                <option value="position">Playlist Order</option>
-                <option value="views">Views</option>
-                <option value="likes">Likes</option>
-                <option value="duration">Video Length</option>
-                <option value="comments">Comments</option>
-                <option value="newest">Newest</option>
-                <option value="oldest">Oldest</option>
-              </select>
-              <div className="flex justify-center items-center h-full">
-                <button className="cursor-pointer" onClick={handelReverse}>
-                  {Reversed ? (
-                    <Image
-                      className=""
-                      width={20}
-                      height={20}
-                      src="descending.svg"
-                      alt="Reversed"
-                    />
-                  ) : (
-                    <Image
-                      className=""
-                      width={20}
-                      height={20}
-                      src="ascending.svg"
-                      alt="Normal"
-                    />
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-5 max-w-6xl w-full mx-auto">
-            {videoData.map((item, index) => (
-              <div
-                key={`${item.id}${item.position}`}
-                className="bg-zinc-900 border flex flex-col justify-between border-zinc-800 hover:bg-zinc-800 ease-in-out duration-200 transition rounded-lg p-4 shadow-lg"
-              >
+              {id === "uploaded" ? (
+                playlistData?.title
+              ) : (
                 <a
-                  href={`https://www.youtube.com/watch?v=${item.id}&list=${playlistData?.id}`}
+                  className="hover:underline"
+                  href={`https://www.youtube.com/playlist?list=${playlistData?.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <div className="text-zinc-400 flex justify-between mb-2">
-                    <span>
-                      #{item.position + 1} ({index + 1})
-                    </span>
-                    <span>
-                      {!thumbnail && (
-                        <span className="text-zinc-400">
-                          {item.duration
-                            ? convertToHrs(Number(item.duration))
-                            : "0"}{" "}
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                  <div className="relative">
-                    {thumbnail && (
-                      <Image
-                        loader={wsrvLoader}
-                        width={330}
-                        height={250}
-                        src={item.thumbnail || ""}
-                        alt={item.title}
-                        className="rounded-lg mb-2"
-                      />
-                    )}
-
-                    {thumbnail && (
-                      <p className="absolute bottom-10 bg-black p-1 rounded-md text-sm right-1">
-                        {item.duration
-                          ? convertToHrs(Number(item.duration))
-                          : "0"}
-                      </p>
-                    )}
-                  </div>
-                  <h3 className="text-xl hover:underline font-semibold">
-                    {item.title}
-                  </h3>
+                  {playlistData?.title}
                 </a>
-                <div>
-                  <p className=" text-zinc-400 flex justify-between">
-                    <a
-                      className="w-full hover:underline"
-                      href={`https://www.youtube.com/channel/${item.channelId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <span className=" text-zinc-300 hover:text-zinc-200">
-                        {item.channelTitle}
-                      </span>
-                    </a>
-                  </p>
-                  <a
-                    href={`https://www.youtube.com/watch?v=${item.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <p className="text-zinc-400">
-                      <span>
-                        {item.views?.toLocaleString("en-GB")}&nbsp; views
-                      </span>
-                      <span>&nbsp;&bull;&nbsp;</span>
-                      <span>{convertDate(item.publishedAt)}</span>
-                    </p>
-                    <p className=" text-zinc-400">
-                      <span>
-                        {item.likes
-                          ? item.likes.toLocaleString("en-GB")
-                          : "Disabled"}{" "}
-                        Likes
-                      </span>
-                      <span>&nbsp;&bull;&nbsp;</span>
-                      <span>
-                        {item.comments != null
-                          ? item.comments.toLocaleString("en-GB")
-                          : "Disabled"}{" "}
-                        Comments
-                      </span>
-                    </p>
-                  </a>
-                </div>
+              )}
+            </h1>
+            {id !== "uploaded" && (
+              <div>
+                <Toggle
+                  onClick={handleBookmark}
+                  size="lg"
+                  variant="outline"
+                  className="dark text-lg cursor-pointer"
+                >
+                  <BookmarkIcon fill={isBookmarked ? "white" : "black"} />
+                  {isBookmarked ? " Bookmarked" : " Bookmark"}
+                </Toggle>
               </div>
+            )}
+          </div>
+
+          <StatisticsCards
+            videoData={videoData}
+            speed={speed}
+            setSpeed={setSpeed}
+            convertToHrs={convertToHrs}
+          />
+        </div>
+        <div>
+          <SortControls
+            thumbnail={thumbnail}
+            handelThumb={handelThumb}
+            handelSort={handelSort}
+            handelReverse={handelReverse}
+            Reversed={Reversed}
+          />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5 max-w-6xl w-full mx-auto">
+            {videoData.map((item) => (
+              <VideoCard
+                key={`${item.id}${item.position}`}
+                item={item}
+                playlistId={playlistData?.id}
+                thumbnail={thumbnail}
+                convertToHrs={convertToHrs}
+                convertDate={convertDate}
+                wsrvLoader={wsrvLoader}
+              />
             ))}
           </div>
         </div>

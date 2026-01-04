@@ -153,6 +153,24 @@ export default function AboutPage() {
                 </CardDescription>
               </CardContent>
             </Card>
+
+            <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <svg className="h-5 w-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                  <CardTitle className="text-white">
+                    Upload Analyzer
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-zinc-400">
+                  Upload Watch Later data from Google Takeout and analyze it locally - no API needed!
+                </CardDescription>
+              </CardContent>
+            </Card>
           </div>
         </section>
 
@@ -168,9 +186,9 @@ export default function AboutPage() {
             <div className="flex items-start gap-3">
               <Check className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
               <div>
-                <h3 className="text-white font-semibold">No tracking</h3>
+                <h3 className="text-white font-semibold">Anonymous analytics only</h3>
                 <p className="text-zinc-400 text-sm">
-                  This site doesn&apos;t track you or collect analytics.
+                  We only use Vercel&apos;s anonymous analytics - no personal data or identifiable information is collected.
                 </p>
               </div>
             </div>
@@ -179,10 +197,10 @@ export default function AboutPage() {
               <Check className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
               <div>
                 <h3 className="text-white font-semibold">
-                  No accounts required
+                  Optional authentication
                 </h3>
                 <p className="text-zinc-400 text-sm">
-                  Use everything without signing up or logging in.
+                  Sign in only needed for Liked Videos and private playlists. Public playlists work without an account.
                 </p>
               </div>
             </div>

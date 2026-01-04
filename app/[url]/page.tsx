@@ -22,10 +22,11 @@ export const metadata: Metadata = {
   },
 };
 
-const page = async ({ params, searchParams }: { params: { url: string }, searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) => {
+const page = async ({ params, searchParams }: { params: Promise<{ url: string }>, searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) => {
   const session = await auth()
   const resolvedSearchParams = await searchParams;
-  let id = (await params).url;
+  const resolvedParams = await params;
+  let id = resolvedParams.url;
 
   // Check if playlist ID is in query parameters first
   const listParam = resolvedSearchParams.list as string | undefined;
