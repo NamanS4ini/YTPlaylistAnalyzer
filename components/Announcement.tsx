@@ -16,6 +16,11 @@ const Announcement = () => {
       message: "UI improvements and bug fixes have been made! Enjoy a smoother experience while analyzing your playlists.",
       enabled: true,
     },
+    {
+      id: 1023,
+      message: "You can now login to analyze Liked Videos playlists! You might see a warning while logging in since the app is being reviewed by Google.",
+      enabled: true,
+    },
   ];
 
   const [dismissedIds, setDismissedIds] = useState<number[]>([]);
