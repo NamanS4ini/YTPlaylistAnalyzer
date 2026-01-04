@@ -5,7 +5,6 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import Navbar from "@/components/navbar/navbar";
-import Announcement from "@/components/Announcement";
 import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
