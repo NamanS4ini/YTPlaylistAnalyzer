@@ -19,7 +19,7 @@ interface VideoCardProps {
 
 export default function VideoCard({ item, playlistId, thumbnail, convertToHrs, convertDate, wsrvLoader }: VideoCardProps) {
     return (
-        <div className="bg-gradient-to-br from-zinc-900 to-zinc-800/50 hover:from-zinc-850 hover:to-zinc-800 border border-zinc-700/50 rounded-xl overflow-hidden shadow-xl hover:shadow-2xl hover:shadow-zinc-700/20 transition-all duration-300 hover:border-zinc-600/50 group">
+        <div className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-700/50 rounded-xl overflow-hidden shadow-xl hover:shadow-2xl hover:shadow-zinc-700/20 transition-all duration-300 hover:border-zinc-600/50 group">
             <a
                 href={`https://www.youtube.com/watch?v=${item.id}&list=${playlistId}`}
                 target="_blank"
@@ -46,7 +46,7 @@ export default function VideoCard({ item, playlistId, thumbnail, convertToHrs, c
                             </div>
                         </>
                     ) : (
-                        <div className="w-full aspect-video bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center">
+                        <div className="w-full aspect-video bg-zinc-800 flex items-center justify-center">
                             <div className="text-center p-4">
                                 <svg className="w-12 h-12 mx-auto mb-2 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -69,7 +69,7 @@ export default function VideoCard({ item, playlistId, thumbnail, convertToHrs, c
 
                     {/* Channel */}
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-400">
+                        <div className="w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center text-xs font-bold text-zinc-400">
                             {item.channelTitle?.charAt(0).toUpperCase() || "?"}
                         </div>
                         <button

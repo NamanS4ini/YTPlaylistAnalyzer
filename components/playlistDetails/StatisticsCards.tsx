@@ -11,7 +11,7 @@ export default function StatisticsCards({ videoData, speed, setSpeed, convertToH
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5 max-w-6xl w-full mx-auto">
             {/* Total Statistics Card */}
-            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800/50 hover:from-zinc-800 hover:to-zinc-700/50 border border-zinc-700/50 rounded-2xl p-6 shadow-2xl w-full transition-all duration-300 hover:shadow-zinc-700/20 hover:scale-[1.02]">
+            <div className="bg-zinc-950  hover:bg-zinc-900  border border-zinc-700/50 rounded-2xl p-6 shadow-2xl w-full transition-all duration-300 hover:shadow-zinc-800/20 hover:scale-[1.02]">
                 <div className="flex items-center gap-3 mb-6">
                     <div className="p-3 bg-blue-500/10 rounded-xl">
                         <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -23,11 +23,11 @@ export default function StatisticsCards({ videoData, speed, setSpeed, convertToH
                 <div className="space-y-5">
                     <div className="group">
                         <p className="text-sm text-zinc-400 mb-1">Total Videos</p>
-                        <p className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                        <p className="text-3xl font-bold text-blue-400">
                             {videoData.length.toLocaleString("en-GB")}
                         </p>
                     </div>
-                    <div className="h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent"></div>
+                    <div className="h-px"></div>
                     <div className="group">
                         <p className="text-sm text-zinc-400 mb-1">Total Duration</p>
                         <p className="text-2xl font-bold text-zinc-100">
@@ -40,7 +40,7 @@ export default function StatisticsCards({ videoData, speed, setSpeed, convertToH
                             )}
                         </p>
                     </div>
-                    <div className="h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent"></div>
+                    <div className="h-px"></div>
                     <div className="group">
                         <p className="text-sm text-zinc-400 mb-1">Average Duration</p>
                         <p className="text-2xl font-bold text-zinc-100">
@@ -59,7 +59,7 @@ export default function StatisticsCards({ videoData, speed, setSpeed, convertToH
             </div>
 
             {/* Engagement Card */}
-            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800/50 hover:from-zinc-800 hover:to-zinc-700/50 border border-zinc-700/50 rounded-2xl p-6 shadow-2xl w-full transition-all duration-300 hover:shadow-zinc-700/20 hover:scale-[1.02]">
+            <div className="bg-zinc-950  hover:bg-zinc-900  border border-zinc-700/50 rounded-2xl p-6 shadow-2xl w-full transition-all duration-300 hover:shadow-zinc-800/20 hover:scale-[1.02]">
                 <div className="flex items-center gap-3 mb-6">
                     <div className="p-3 bg-pink-500/10 rounded-xl">
                         <svg className="w-6 h-6 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,18 +71,27 @@ export default function StatisticsCards({ videoData, speed, setSpeed, convertToH
                 <div className="space-y-5">
                     <div className="group">
                         <p className="text-sm text-zinc-400 mb-1">Total Likes</p>
-                        <p className="text-3xl font-bold bg-gradient-to-r from-pink-400 to-rose-400 bg-clip-text text-transparent">
+                        <p className="text-3xl font-bold  text-pink-400">
                             {videoData
                                 .reduce((acc, item) => acc + (item.likes || 0), 0)
                                 .toLocaleString("en-GB")}
                         </p>
                     </div>
-                    <div className="h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent"></div>
+                    <div className="h-px"></div>
                     <div className="group">
                         <p className="text-sm text-zinc-400 mb-1">Total Views</p>
-                        <p className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">
+                        <p className="text-3xl font-bold text-indigo-400">
                             {videoData
                                 .reduce((acc, item) => acc + (item.views || 0), 0)
+                                .toLocaleString("en-GB")}
+                        </p>
+                    </div>
+                    <div className="h-px"></div>
+                    <div className="group">
+                        <p className="text-sm text-zinc-400 mb-1">Total Comments</p>
+                        <p className="text-3xl font-bold text-cyan-400">
+                            {videoData
+                                .reduce((acc, item) => acc + (item.comments || 0), 0)
                                 .toLocaleString("en-GB")}
                         </p>
                     </div>
@@ -90,7 +99,7 @@ export default function StatisticsCards({ videoData, speed, setSpeed, convertToH
             </div>
 
             {/* Playback Speed Card */}
-            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800/50 hover:from-zinc-800 hover:to-zinc-700/50 border border-zinc-700/50 rounded-2xl p-6 shadow-2xl w-full transition-all duration-300 hover:shadow-zinc-700/20 hover:scale-[1.02]">
+            <div className="bg-zinc-950  hover:bg-zinc-900  border border-zinc-700/50 rounded-2xl p-6 shadow-2xl w-full transition-all duration-300 hover:shadow-zinc-800/20 hover:scale-[1.02]">
                 <div className="flex items-center gap-3 mb-6">
                     <div className="p-3 bg-green-500/10 rounded-xl">
                         <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
