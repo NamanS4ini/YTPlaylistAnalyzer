@@ -15,7 +15,7 @@ import {
   SheetTrigger,
   SheetClose,
 } from "@/components/ui/sheet";
-import { CircleHelpIcon, Github, CircleAlertIcon, Menu, Upload, Home, Bookmark } from "lucide-react";
+import { CircleHelpIcon, Github, CircleAlertIcon, Menu, Upload, Home, Bookmark, UploadIcon, Coffee } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
@@ -53,15 +53,8 @@ export default async function NavigationMenuDemo() {
                 </Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <Link
-                  href="/upload"
-                  className="px-2 text-sm py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
-                  Upload
-                </Link>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
                 <NavigationMenuTrigger className="sm:px-4 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
-                  About
+                  More
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="w-48">
@@ -81,6 +74,26 @@ export default async function NavigationMenuDemo() {
                           <h1 className="font-medium flex items-center gap-2">
                             <CircleAlertIcon />
                             Feedback
+                          </h1>
+                        </Link>
+                      </NavigationMenuLink>
+                    </li>
+                    <li>
+                      <NavigationMenuLink asChild>
+                        <Link href="https://buymeacoffee.com/namansaini" target="_blank" rel="noopener noreferrer">
+                          <h1 className="font-medium flex items-center gap-2">
+                            <Coffee />
+                            Buy me a Coffee
+                          </h1>
+                        </Link>
+                      </NavigationMenuLink>
+                    </li>
+                    <li>
+                      <NavigationMenuLink asChild>
+                        <Link href="/upload">
+                          <h1 className="font-medium flex items-center gap-2">
+                            <UploadIcon />
+                            Upload
                           </h1>
                         </Link>
                       </NavigationMenuLink>

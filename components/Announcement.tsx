@@ -16,6 +16,11 @@ const Announcement = () => {
       message: "You can now sign in to analyze your Liked Videos playlist.\nDuring sign-in, you may see a Google warning because the app is currently under review. This is expected and safe to proceed.",
       enabled: true,
     },
+    {
+      id: 1025,
+      message: "Support the project by <a style=\"color:aqua; text-decoration:underline;\" href=\"https://buymeacoffee.com/namansaini\" target=\"_blank\" rel=\"noopener noreferrer\">buying me a coffee!</a>",
+      enabled: true,
+    }
   ];
 
   const [dismissedIds, setDismissedIds] = useState<number[]>([]);
