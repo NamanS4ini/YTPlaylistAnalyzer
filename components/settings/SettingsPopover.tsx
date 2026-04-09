@@ -19,7 +19,7 @@ export default function SettingsPopover() {
             </PopoverTrigger>
             <PopoverContent
                 align="end"
-                className="w-96 bg-zinc-950 border-zinc-800 text-white p-6 max-h-[80vh] overflow-y-auto"
+                className="md:w-96 bg-zinc-950 border-zinc-800 text-white p-6 max-h-[80vh] overflow-y-auto"
             >
                 <div className="space-y-6">
                     <div>

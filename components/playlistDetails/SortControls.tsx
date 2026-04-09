@@ -10,13 +10,13 @@ interface SortControlsProps {
 export default function SortControls({ handelSort, handelReverse, Reversed }: SortControlsProps) {
     return (
         <div>
-            <h2 className="text-4xl flex md:flex-row items-center gap-5 flex-col justify-between font-bold">
+            <h2 className="md:text-4xl text-2xl flex items-center gap-5 justify-between font-bold">
                 Videos in Playlist
 
                 <SettingsPopover />
             </h2>
             <div className="flex gap-10 justify-center md:justify-start items-center p-5">
-                <h2 className="text-2xl flex justify-between font-bold">
+                <h2 className="text-xl md:text-2xl flex justify-between font-bold">
                     Sort By:{" "}
                 </h2>
                 <div className="flex gap-4 justify-center items-center">
