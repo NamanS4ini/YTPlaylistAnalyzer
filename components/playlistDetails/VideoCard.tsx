@@ -7,6 +7,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useSettings } from "@/hooks/settingHook";
 
 interface VideoCardProps {
     item: VideoData;
@@ -18,6 +19,20 @@ interface VideoCardProps {
 }
 
 export default function VideoCard({ item, playlistId, thumbnail, convertToHrs, convertDate, wsrvLoader }: VideoCardProps) {
+    const { settings } = useSettings();
+    const videoStats = settings.videoStats;
+
+    const calcStats = (stat: number | null, style: "rounded" | "exact") => {
+        if (stat == null) return "N/A";
+        if (style === "exact") return stat.toLocaleString("en-GB");
+        return stat >= 1000000
+            ? (stat / 1000000).toFixed(1) + "M"
+            : stat >= 1000
+                ? (stat / 1000).toFixed(1) + "K"
+                : stat.toLocaleString("en-GB");
+    };
+
+
     return (
         <div className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-700/50 rounded-xl overflow-hidden shadow-xl hover:shadow-2xl hover:shadow-zinc-700/20 transition-all duration-300 hover:border-zinc-600/50 group">
             <a
@@ -89,51 +104,55 @@ export default function VideoCard({ item, playlistId, thumbnail, convertToHrs, c
                         <div className="grid grid-cols-2 gap-2 pt-2 border-t border-zinc-700/50">
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <div className="flex items-center gap-1.5 cursor-help w-fit">
+                                    <div className={"flex items-center gap-1.5 w-fit" + (videoStats === "exact" ? " cursor-pointer" : " cursor-help")}>
                                         <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
                                         <span className="text-xs text-zinc-400 truncate">
-                                            {item.views ? (item.views >= 1000000 ? (item.views / 1000000).toFixed(1) + "M" : item.views >= 1000 ? (item.views / 1000).toFixed(1) + "K" : item.views.toLocaleString("en-GB")) : "0"}
+                                            {calcStats(item.views, videoStats)}
                                         </span>
                                     </div>
                                 </TooltipTrigger>
-                                <TooltipContent>
-                                    <p className="font-semibold">{item.views?.toLocaleString("en-GB") || "0"} views</p>
-                                </TooltipContent>
+                                {
+                                    videoStats === "rounded" &&  <TooltipContent>
+                                        <p className="font-semibold">{item.views?.toLocaleString("en-GB") || "0"} views</p>
+                                    </TooltipContent>}
                             </Tooltip>
 
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <div className="flex items-center gap-1.5 cursor-help w-fit">
+                                    <div className={"flex items-center gap-1.5 w-fit" + (videoStats === "exact" ? " cursor-pointer" : " cursor-help")}>
                                         <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                         </svg>
                                         <span className="text-xs text-zinc-400 truncate">
-                                            {item.likes ? (item.likes >= 1000000 ? (item.likes / 1000000).toFixed(1) + "M" : item.likes >= 1000 ? (item.likes / 1000).toFixed(1) + "K" : item.likes.toLocaleString("en-GB")) : "N/A"}
+                                            {calcStats(item.likes, videoStats)}
                                         </span>
                                     </div>
                                 </TooltipTrigger>
-                                <TooltipContent>
-                                    <p className="font-semibold">{item.likes ? item.likes.toLocaleString("en-GB") + " likes" : "Likes disabled"}</p>
-                                </TooltipContent>
+
+                                {videoStats === "rounded" && (
+                                    <TooltipContent>
+                                        <p className="font-semibold">{item.likes ? item.likes.toLocaleString("en-GB") + " likes" : "Likes disabled"}</p>
+                                    </TooltipContent>
+                                )}
                             </Tooltip>
 
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <div className="flex items-center gap-1.5 cursor-help w-fit">
+                                    <div className={"flex items-center gap-1.5 w-fit" + (videoStats === "exact" ? " cursor-pointer" : " cursor-help")}>
                                         <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                                         </svg>
                                         <span className="text-xs text-zinc-400 truncate">
-                                            {item.comments != null ? (item.comments >= 1000000 ? (item.comments / 1000000).toFixed(1) + "M" : item.comments >= 1000 ? (item.comments / 1000).toFixed(1) + "K" : item.comments.toLocaleString("en-GB")) : "N/A"}
+                                            {calcStats(item.comments, videoStats)}
                                         </span>
                                     </div>
                                 </TooltipTrigger>
-                                <TooltipContent>
+                                {videoStats === "rounded" && <TooltipContent>
                                     <p className="font-semibold">{item.comments != null ? item.comments.toLocaleString("en-GB") + " comments" : "Comments disabled"}</p>
-                                </TooltipContent>
+                                </TooltipContent>}
                             </Tooltip>
 
                             <Tooltip>

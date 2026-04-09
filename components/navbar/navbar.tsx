@@ -118,7 +118,7 @@ export default async function NavigationMenuDemo() {
           </NavigationMenu>
 
           {/* Auth Section */}
-          <div className="border-l border-zinc-700 pl-2 ml-2">
+          <div className="border-l border-zinc-700 pl-2 ml-2 flex items-center gap-2">
             {session?.user ? (
               <div className="flex items-center gap-2">
                 {session.user.image && (

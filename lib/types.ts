@@ -69,10 +69,31 @@ type UploadedVideoData = {
   comments: number | null;
 };
 
+type Settings = {
+  thumbnail: boolean;
+  cacheExpireTime: number;
+  recentPlaylistNumber: number;
+  navbarStyle: 'icon' | 'icon-text' | 'text' | 'default';
+  navbarItems: {
+    home: boolean;
+    saved: boolean;
+    about: boolean;
+    settings: boolean;
+    feedback: boolean;
+    buyMeACoffee: boolean;
+    upload: boolean;
+    github: boolean;
+    signIn: boolean;
+  };
+  showAnnouncement: boolean;
+  videoStats: "rounded" | "exact";
+};
+
 export type {
   VideoData,
   PlayListData,
   PlaylistCard,
+  Settings,
   Playlist,
   AnnouncementType,
   UploadedPlaylistData,

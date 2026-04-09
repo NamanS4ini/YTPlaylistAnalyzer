@@ -1,38 +1,19 @@
 import Image from "next/image";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import SettingsPopover from "../settings/SettingsPopover";
 
 interface SortControlsProps {
-    thumbnail: boolean;
-    handelThumb: () => void;
     handelSort: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     handelReverse: () => void;
     Reversed: boolean;
 }
 
-export default function SortControls({ thumbnail, handelThumb, handelSort, handelReverse, Reversed }: SortControlsProps) {
+export default function SortControls({ handelSort, handelReverse, Reversed }: SortControlsProps) {
     return (
         <div>
             <h2 className="text-4xl flex md:flex-row items-center gap-5 flex-col justify-between font-bold">
                 Videos in Playlist
-                <span>
-                    <Switch
-                        id="thumbnail"
-                        onClick={() => {
-                            handelThumb();
-                        }}
-                        defaultChecked={thumbnail}
-                        className="dark cursor-pointer"
-                    />
-                    <Label
-                        htmlFor="thumbnail"
-                        className="inline-flex items-center cursor-pointer"
-                    >
-                        <span className="ms-3 text-2xl font-medium dark">
-                            Thumbnails
-                        </span>
-                    </Label>
-                </span>
+
+                <SettingsPopover />
             </h2>
             <div className="flex gap-10 justify-center md:justify-start items-center p-5">
                 <h2 className="text-2xl flex justify-between font-bold">

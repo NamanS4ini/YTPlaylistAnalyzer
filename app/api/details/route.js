@@ -133,7 +133,7 @@ export async function GET(request) {
     batches.map(async (ids) => {
       const [contentRes, statsRes] = await Promise.all([
         fetch(
-          `https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${ids}&key=${apiKey}`
+          `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,snippet&id=${ids}&key=${apiKey}`
         ),
         fetch(
           `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${ids}&key=${apiKey}`
@@ -150,6 +150,7 @@ export async function GET(request) {
 
         return {
           id: item.id,
+          publishedAt: item.snippet?.publishedAt || null,
           duration: seconds,
           likes: statsItem?.statistics?.likeCount || null,
           views: statsItem?.statistics?.viewCount || null,
@@ -168,6 +169,7 @@ export async function GET(request) {
     if (detailItem) {
       return {
         ...item,
+        publishedAt: detailItem.publishedAt,
         duration: detailItem.duration,
         likes: parseInt(detailItem.likes) || null,
         views: parseInt(detailItem.views) || null,

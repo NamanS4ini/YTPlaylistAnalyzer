@@ -6,6 +6,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import Navbar from "@/components/navbar/navbar";
 import { Toaster } from "@/components/ui/sonner";
+import Providers from "./providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -86,11 +87,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased w-full overflow-x-hidden text-white bg-zinc-900`}
       >
-        <Navbar />
-        {children}
-        <Toaster className="dark" position="top-center" richColors />
-        <SpeedInsights />
-        <Analytics />
+        <Providers>
+          <Navbar />
+          {children}
+          <Toaster className="dark" position="top-center" richColors />
+          <SpeedInsights />
+          <Analytics />
+        </Providers>
       </body>
     </html>
   );

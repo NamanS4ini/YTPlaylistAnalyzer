@@ -20,7 +20,7 @@ const Announcement = () => {
       id: 1025,
       message: "Support the project by <a style=\"color:aqua; text-decoration:underline;\" href=\"https://buymeacoffee.com/namansaini\" target=\"_blank\" rel=\"noopener noreferrer\">buying me a coffee!</a>",
       enabled: true,
-    }
+    }, 
   ];
 
   const [dismissedIds, setDismissedIds] = useState<number[]>([]);

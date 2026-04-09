@@ -19,17 +19,19 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { useSettings } from "@/hooks/settingHook";
 
 export default function PlaylistDetails({ id, start, end }: { id?: string, start?: string, end?: string }) {
   start = start || "0";
   end = end || "5000";
+  const { settings } = useSettings();
+  const thumbnail = settings.thumbnail;
 
   const [videoData, setVideoData] = useState<VideoData[] | null>(null);
   const [playlistData, setPlaylistData] = useState<PlayListData | null>(null);
   const [error, setError] = useState<number | null>(null);
   const [Reversed, setReversed] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [thumbnail, setThumbnail] = useState<boolean>(false);
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
   const [speed, setSpeed] = useState<string>("1");
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -48,11 +50,6 @@ export default function PlaylistDetails({ id, start, end }: { id?: string, start
     const time =
       hours > 0 ? `${hours}h ${minutes}m ${secs}s` : `${minutes}m ${secs}s`;
     return time;
-  }
-
-  function handelThumb() {
-    setThumbnail(!thumbnail);
-    localStorage.setItem("thumbnail", JSON.stringify(!thumbnail));
   }
 
   function handelSort(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -283,7 +280,6 @@ export default function PlaylistDetails({ id, start, end }: { id?: string, start
 
   useEffect(() => {
     // check if current playlist is bookmarked
-    setThumbnail(JSON.parse(localStorage.getItem("thumbnail") || "false"));
     const savedPlaylists = JSON.parse(
       localStorage.getItem("bookmarks") || "[]"
     );
@@ -381,8 +377,6 @@ export default function PlaylistDetails({ id, start, end }: { id?: string, start
         </div>
         <div>
           <SortControls
-            thumbnail={thumbnail}
-            handelThumb={handelThumb}
             handelSort={handelSort}
             handelReverse={handelReverse}
             Reversed={Reversed}
