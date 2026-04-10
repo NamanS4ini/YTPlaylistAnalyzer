@@ -1,5 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
 
+function getApiKeys(): string[] {
+  return (process.env.API_KEY || "")
+    .split(",")
+    .map((key) => key.trim())
+    .filter(Boolean);
+}
+
+function shouldTryNextApiKey(status: number): boolean {
+  return status === 400 || status === 401 || status === 403 || status === 429;
+}
+
+async function fetchWithApiKeyFallback(
+  buildUrl: (key: string) => string,
+  apiKeys: string[]
+): Promise<Response> {
+  let lastResponse: Response | null = null;
+
+  for (const key of apiKeys) {
+    const response = await fetch(buildUrl(key));
+    if (response.ok) {
+      return response;
+    }
+
+    lastResponse = response;
+
+    if (!shouldTryNextApiKey(response.status)) {
+      return response;
+    }
+  }
+
+  if (lastResponse) {
+    return lastResponse;
+  }
+
+  throw new Error("No API key configured");
+}
+
 // Helper function to parse ISO 8601 duration format
 function convertToSeconds(duration: string): number | null {
   if (!duration) return null;
@@ -26,9 +63,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Missing video IDs" }, { status: 400 });
   }
 
-  const apiKey = process.env.API_KEY;
+  const apiKeys = getApiKeys();
 
-  if (!apiKey) {
+  if (!apiKeys.length) {
     return NextResponse.json(
       { error: "API key not configured" },
       { status: 500 }
@@ -37,8 +74,10 @@ export async function GET(request: NextRequest) {
 
   try {
     // Fetch video details in a single request
-    const res = await fetch(
-      `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=${ids}&key=${apiKey}`
+    const res = await fetchWithApiKeyFallback(
+      (key) =>
+        `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=${ids}&key=${key}`,
+      apiKeys
     );
 
     if (!res.ok) {

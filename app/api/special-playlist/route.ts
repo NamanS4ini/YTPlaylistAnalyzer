@@ -9,6 +9,17 @@ const errorMessages: Record<number, string> = {
   500: "Internal Server Error - Please try again later.",
 };
 
+function getApiKeys(): string[] {
+  return (process.env.API_KEY || "")
+    .split(",")
+    .map((key) => key.trim())
+    .filter(Boolean);
+}
+
+function shouldTryNextApiKey(status: number): boolean {
+  return status === 400 || status === 401 || status === 403 || status === 429;
+}
+
 // Helper function to parse ISO 8601 duration format
 function convertToSeconds(duration: string | null): number | null {
   if (!duration) return null;
@@ -173,26 +184,74 @@ export async function GET(request: NextRequest) {
     }
 
     // Use API key for video details (doesn't require authentication)
-    const apiKey = process.env.API_KEY;
+    const apiKeys = getApiKeys();
+
+    if (!apiKeys.length) {
+      return NextResponse.json(
+        {
+          status: 500,
+          message: "API key not configured",
+        },
+        { status: 500 }
+      );
+    }
+
+    let currentApiKey = apiKeys[0];
+
+    const fetchWithApiKeyFallback = async (
+      buildUrl: (key: string) => string
+    ) => {
+      const orderedKeys = [
+        currentApiKey,
+        ...apiKeys.filter((key) => key !== currentApiKey),
+      ];
+
+      let lastResponse: Response | null = null;
+
+      for (const key of orderedKeys) {
+        const response = await fetch(buildUrl(key));
+        if (response.ok) {
+          currentApiKey = key;
+          return response;
+        }
+
+        lastResponse = response;
+
+        if (!shouldTryNextApiKey(response.status)) {
+          return response;
+        }
+      }
+
+      return lastResponse as Response;
+    };
 
     // Fetch video details (duration and statistics) in parallel
     const details = await Promise.all(
       batches.map(async (ids) => {
         const [contentRes, statsRes] = await Promise.all([
-          fetch(
-            `https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${ids}&key=${apiKey}`
+          fetchWithApiKeyFallback(
+            (key) =>
+              `https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${ids}&key=${key}`
           ),
-          fetch(
-            `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${ids}&key=${apiKey}`
+          fetchWithApiKeyFallback(
+            (key) =>
+              `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${ids}&key=${key}`
           ),
         ]);
 
         const contentData = await contentRes.json();
         const statsData = await statsRes.json();
 
-        return contentData.items.map(
+        const contentItems = Array.isArray(contentData?.items)
+          ? contentData.items
+          : [];
+        const statsItems = Array.isArray(statsData?.items)
+          ? statsData.items
+          : [];
+
+        return contentItems.map(
           (item: { id: string; contentDetails?: { duration?: string } }) => {
-            const statsItem = statsData.items.find(
+            const statsItem = statsItems.find(
               (s: {
                 id: string;
                 statistics?: {

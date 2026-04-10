@@ -7,6 +7,17 @@ const errorMessages = {
   500: "Internal Server Error - Please try again later.",
 };
 
+function getApiKeys() {
+  return (process.env.API_KEY || "")
+    .split(",")
+    .map((key) => key.trim())
+    .filter(Boolean);
+}
+
+function shouldTryNextApiKey(status) {
+  return status === 400 || status === 401 || status === 403 || status === 429;
+}
+
 // Helper function to parse ISO 8601 duration format
 function convertToSeconds(duration) {
   if (!duration) return null;
@@ -67,11 +78,49 @@ export async function GET(request) {
   const id = searchParams.get("id");
   const start = parseInt(searchParams.get("start")) || 1;
   const end = parseInt(searchParams.get("end"));
-  const apiKey = process.env.API_KEY;
+  const apiKeys = getApiKeys();
+
+  if (!apiKeys.length) {
+    return Response.json(
+      {
+        status: 500,
+        message: "API key not configured",
+      },
+      { status: 500 }
+    );
+  }
+
+  let currentApiKey = apiKeys[0];
+
+  const fetchWithApiKeyFallback = async (buildUrl) => {
+    const orderedKeys = [
+      currentApiKey,
+      ...apiKeys.filter((key) => key !== currentApiKey),
+    ];
+
+    let lastResponse = null;
+
+    for (const key of orderedKeys) {
+      const response = await fetch(buildUrl(key));
+      if (response.ok) {
+        currentApiKey = key;
+        return response;
+      }
+
+      lastResponse = response;
+
+      if (!shouldTryNextApiKey(response.status)) {
+        return response;
+      }
+    }
+
+    return lastResponse;
+  };
 
   // Fetch initial playlist items
-  const res = await fetch(
-    `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${id}&maxResults=50&key=${apiKey}`
+  const res = await fetchWithApiKeyFallback(
+    (key) =>
+      `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${id}&maxResults=50&key=${key}`
   );
 
   if (!res.ok) {
@@ -89,11 +138,20 @@ export async function GET(request) {
   let nextPageToken = playlistData.nextPageToken;
 
   while (nextPageToken) {
-    const res2 = await fetch(
-      `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${id}&maxResults=50&pageToken=${nextPageToken}&key=${apiKey}`
+    const res2 = await fetchWithApiKeyFallback(
+      (key) =>
+        `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${id}&maxResults=50&pageToken=${nextPageToken}&key=${key}`
     );
+
+    if (!res2.ok) {
+      break;
+    }
+
     const playlistData2 = await res2.json();
-    playlistData.items.push(...playlistData2.items);
+    const pageItems = Array.isArray(playlistData2.items)
+      ? playlistData2.items
+      : [];
+    playlistData.items.push(...pageItems);
     nextPageToken = playlistData2.nextPageToken || null;
   }
 
@@ -132,19 +190,26 @@ export async function GET(request) {
   const details = await Promise.all(
     batches.map(async (ids) => {
       const [contentRes, statsRes] = await Promise.all([
-        fetch(
-          `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,snippet&id=${ids}&key=${apiKey}`
+        fetchWithApiKeyFallback(
+          (key) =>
+            `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,snippet&id=${ids}&key=${key}`
         ),
-        fetch(
-          `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${ids}&key=${apiKey}`
+        fetchWithApiKeyFallback(
+          (key) =>
+            `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${ids}&key=${key}`
         ),
       ]);
 
       const contentData = await contentRes.json();
       const statsData = await statsRes.json();
 
-      return contentData.items.map((item) => {
-        const statsItem = statsData.items.find((s) => s.id === item.id);
+      const contentItems = Array.isArray(contentData?.items)
+        ? contentData.items
+        : [];
+      const statsItems = Array.isArray(statsData?.items) ? statsData.items : [];
+
+      return contentItems.map((item) => {
+        const statsItem = statsItems.find((s) => s.id === item.id);
         const duration = item.contentDetails?.duration || null;
         const seconds = convertToSeconds(duration);
 
@@ -191,8 +256,9 @@ export async function GET(request) {
   }
 
   // Fetch playlist details
-  const playlistRes = await fetch(
-    `https://www.googleapis.com/youtube/v3/playlists?key=${apiKey}&id=${id}&part=snippet&fields=items(id,snippet(title,channelId,channelTitle,thumbnails))`
+  const playlistRes = await fetchWithApiKeyFallback(
+    (key) =>
+      `https://www.googleapis.com/youtube/v3/playlists?key=${key}&id=${id}&part=snippet&fields=items(id,snippet(title,channelId,channelTitle,thumbnails))`
   );
 
   let playlistDetails = null;

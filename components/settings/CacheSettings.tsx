@@ -3,16 +3,25 @@
 import { useSettings } from "@/hooks/settingHook";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 export default function CacheSettings() {
     const { settings, updateSettings } = useSettings();
 
-    const handleCacheTimeChange = (value: string) => {
-        const num = parseInt(value) || 0;
-        if (num >= 0) {
-            updateSettings({ cacheExpireTime: num });
-        }
-    };
+    const cacheExpiryOptions = [
+        { label: "1 Day", value: "24" },
+        { label: "2 Days", value: "48" },
+        { label: "3 Days", value: "72" },
+        { label: "1 Week", value: "168" },
+        { label: "2 Weeks", value: "336" },
+        { label: "1 Month", value: "720" },
+    ];
 
     const handleRecentChange = (value: string) => {
         const num = parseInt(value) || 0;
@@ -22,7 +31,7 @@ export default function CacheSettings() {
     };
 
     return (
-        <div className="space-y-6 opacity-50">
+        <div className="space-y-6">
             <div>
                 <h3 className="text-lg font-semibold mb-4">Cache & Storage</h3>
             </div>
@@ -32,20 +41,30 @@ export default function CacheSettings() {
                     Cache Expiration Time (hours)
                 </Label>
                 <p className="text-sm text-zinc-400 mb-3">
-                    How long to cache playlist data before refreshing
+                    How long to cache playlist data before refreshing. Minimum is 24 hours.
                 </p>
-                <Input
-                    disabled
-                    id="cache-time"
-                    type="number"
-                    min="0"
-                    value={settings.cacheExpireTime}
-                    onChange={(e) => handleCacheTimeChange(e.target.value)}
-                    className="bg-zinc-800 border-zinc-700 text-white"
-                />
+                <Select
+                    value={String(settings.cacheExpireTime)}
+                    onValueChange={(value) => updateSettings({ cacheExpireTime: parseInt(value, 10) })}
+                >
+                    <SelectTrigger id="cache-time" className="bg-zinc-800 border-zinc-700 text-white">
+                        <SelectValue placeholder="Select cache duration" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                        {cacheExpiryOptions.map((option) => (
+                            <SelectItem
+                                key={option.value}
+                                value={option.value}
+                                className="text-white focus:bg-zinc-800 focus:text-white"
+                            >
+                                {option.label}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
 
-            <div className="space-y-3 p-4 bg-zinc-900 rounded-lg">
+            <div className="space-y-3 p-4 opacity-50 bg-zinc-900 rounded-lg">
                 <Label htmlFor="recent-count" className="text-base font-medium text-white">
                     Recent Playlists Count
                 </Label>

@@ -5,6 +5,17 @@ const errorMessages: Record<number, string> = {
   500: "Internal Server Error - Please try again later.",
 };
 
+function getApiKeys(): string[] {
+  return (process.env.API_KEY || "")
+    .split(",")
+    .map((key) => key.trim())
+    .filter(Boolean);
+}
+
+function shouldTryNextApiKey(status: number): boolean {
+  return status === 400 || status === 401 || status === 403 || status === 429;
+}
+
 function validateOrigin(req: Request) {
   const origin = req.headers.get("origin");
   const referer = req.headers.get("referer");
@@ -47,10 +58,48 @@ export async function GET(req: Request) {
   const origin = req.headers.get("origin");
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
-  const apiKey = process.env.API_KEY;
+  const apiKeys = getApiKeys();
+
+  if (!apiKeys.length) {
+    return Response.json(
+      {
+        status: 500,
+        message: "API key not configured",
+      },
+      { status: 500 }
+    );
+  }
+
+  let currentApiKey = apiKeys[0];
+
+  const fetchWithApiKeyFallback = async (buildUrl: (key: string) => string) => {
+    const orderedKeys = [
+      currentApiKey,
+      ...apiKeys.filter((key) => key !== currentApiKey),
+    ];
+
+    let lastResponse: Response | null = null;
+
+    for (const key of orderedKeys) {
+      const response = await fetch(buildUrl(key));
+      if (response.ok) {
+        currentApiKey = key;
+        return response;
+      }
+
+      lastResponse = response;
+
+      if (!shouldTryNextApiKey(response.status)) {
+        return response;
+      }
+    }
+
+    return lastResponse as Response;
+  };
   // fetching the playlist data from youtube api
-  const res = await fetch(
-    `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${id}&maxResults=50&key=${apiKey}`
+  const res = await fetchWithApiKeyFallback(
+    (key) =>
+      `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${id}&maxResults=50&key=${key}`
   );
   //   if the playlist data is not found then return the error message
   if (!res.ok) {
@@ -67,11 +116,18 @@ export async function GET(req: Request) {
   const playlistData = await res.json();
   let nextPageToken = playlistData.nextPageToken;
   while (nextPageToken) {
-    const res2 = await fetch(
-      `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${id}&maxResults=50&pageToken=${nextPageToken}&key=${apiKey}`
+    const res2 = await fetchWithApiKeyFallback(
+      (key) =>
+        `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${id}&maxResults=50&pageToken=${nextPageToken}&key=${key}`
     );
+    if (!res2.ok) {
+      break;
+    }
     const playlistData2 = await res2.json();
-    playlistData.items.push(...playlistData2.items);
+    const pageItems = Array.isArray(playlistData2.items)
+      ? playlistData2.items
+      : [];
+    playlistData.items.push(...pageItems);
     nextPageToken = playlistData2.nextPageToken || null;
   }
 
@@ -94,10 +150,11 @@ export async function GET(req: Request) {
 
   for (let i = 0; i < videoIds.length; i += batchSize) {
     const batch = videoIds.slice(i, i + batchSize);
-    const videoRes = await fetch(
-      `https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${batch.join(
-        ","
-      )}&key=${apiKey}`
+    const videoRes = await fetchWithApiKeyFallback(
+      (key) =>
+        `https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${batch.join(
+          ","
+        )}&key=${key}`
     );
 
     if (videoRes.ok) {
@@ -119,8 +176,9 @@ export async function GET(req: Request) {
   const totalDuration = formatDuration(totalSeconds);
 
   // Fetch playlist details for title
-  const playlistRes = await fetch(
-    `https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${id}&key=${apiKey}`
+  const playlistRes = await fetchWithApiKeyFallback(
+    (key) =>
+      `https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${id}&key=${key}`
   );
 
   let playlistTitle = "Unknown Playlist";

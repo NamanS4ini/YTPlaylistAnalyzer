@@ -9,9 +9,11 @@ import {
     useState,
 } from "react";
 
+const MIN_CACHE_EXPIRY_HOURS = 24;
+
 const DEFAULT_SETTINGS: Settings = {
     thumbnail: true,
-    cacheExpireTime: 24,
+    cacheExpireTime: MIN_CACHE_EXPIRY_HOURS,
     recentPlaylistNumber: 5,
     navbarStyle: "default",
     navbarItems: {
@@ -29,6 +31,17 @@ const DEFAULT_SETTINGS: Settings = {
     videoStats: "rounded",
 
 };
+
+function normalizeCacheExpireTime(value: number | undefined | null) {
+    const parsedValue = Number(value);
+
+    if (!Number.isFinite(parsedValue) || parsedValue < MIN_CACHE_EXPIRY_HOURS) {
+        return MIN_CACHE_EXPIRY_HOURS;
+    }
+
+    return Math.floor(parsedValue);
+}
+
 function getSettings(): Settings {
     if (typeof window === "undefined") return DEFAULT_SETTINGS;
 
@@ -41,6 +54,7 @@ function getSettings(): Settings {
         return {
             ...DEFAULT_SETTINGS,
             ...parsed,
+            cacheExpireTime: normalizeCacheExpireTime(parsed.cacheExpireTime),
             navbarItems: {
                 ...DEFAULT_SETTINGS.navbarItems,
                 ...(parsed.navbarItems || {}),
@@ -66,6 +80,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
             const updated = {
                 ...prev,
                 ...updates,
+                cacheExpireTime: normalizeCacheExpireTime(
+                    updates.cacheExpireTime ?? prev.cacheExpireTime
+                ),
                 navbarItems: {
                     ...prev.navbarItems,
                     ...(updates.navbarItems || {}),
