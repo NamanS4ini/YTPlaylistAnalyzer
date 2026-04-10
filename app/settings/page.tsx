@@ -5,7 +5,7 @@ import NavbarSettings from "@/components/settings/NavbarSettings";
 import AnnouncementSettings from "@/components/settings/AnnouncementSettings";
 
 export const metadata: Metadata = {
-  title: "Settings | YTPLA",
+  title: "Settings",
   description: "Customize your YouTube Playlist Analyzer preferences",
 };
 

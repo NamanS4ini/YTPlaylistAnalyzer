@@ -10,10 +10,11 @@ import {
 } from "react";
 
 const MIN_CACHE_EXPIRY_HOURS = 24;
+const DEFAULT_CACHE_EXPIRY_HOURS = 48;
 
 const DEFAULT_SETTINGS: Settings = {
     thumbnail: true,
-    cacheExpireTime: MIN_CACHE_EXPIRY_HOURS,
+    cacheExpireTime: DEFAULT_CACHE_EXPIRY_HOURS,
     recentPlaylistNumber: 5,
     navbarStyle: "default",
     navbarItems: {

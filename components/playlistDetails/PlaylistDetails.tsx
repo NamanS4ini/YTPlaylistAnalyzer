@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/tooltip";
 import { usePlaylistDetailsData } from "@/hooks/usePlaylistDetailsData";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export default function PlaylistDetails({
     id,
@@ -153,7 +154,7 @@ export default function PlaylistDetails({
     useEffect(() => {
         if (!playlistData || !videoData) return;
 
-        document.title = `${playlistData.title} - YTPLA`;
+        document.title = playlistData.title;
 
         const currentPlaylist: PlaylistCard = {
             id: playlistData.id,
@@ -185,6 +186,27 @@ export default function PlaylistDetails({
     useEffect(() => {
         setDisplayVideoData(videoData);
     }, [videoData]);
+
+    useEffect(() => {
+        if (!(loading && activeVideoData === null && error === null)) {
+            return;
+        }
+
+        let toastId: string | number | undefined;
+        const loadingTimeout = setTimeout(() => {
+            toastId = toast.info(
+                "This playlist seems large and will take some time to load. Please wait...",
+                { duration: Infinity }
+            );
+        }, 3000);
+
+        return () => {
+            clearTimeout(loadingTimeout);
+            if (toastId) {
+                toast.dismiss(toastId);
+            }
+        };
+    }, [loading, activeVideoData, error]);
 
     if (loading && activeVideoData === null && error === null) {
         return (

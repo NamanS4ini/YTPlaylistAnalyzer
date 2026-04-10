@@ -11,14 +11,20 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
-export default function DisplaySettings() {
+export default function DisplaySettings({
+    showTitle = true,
+}: {
+    showTitle?: boolean;
+}) {
     const { settings, updateSettings } = useSettings();
 
     return (
         <div className="space-y-6">
-            <div>
-                <h3 className="text-lg font-semibold mb-4">Display Settings</h3>
-            </div>
+            {showTitle && (
+                <div>
+                    <h3 className="text-lg font-semibold mb-4">Display Settings</h3>
+                </div>
+            )}
 
             <div
                 className={`flex items-center justify-between p-4 bg-zinc-900 rounded-lg cursor-pointer transition-opacity ${settings.thumbnail ? 'opacity-100' : 'opacity-60'

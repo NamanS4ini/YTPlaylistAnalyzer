@@ -11,7 +11,13 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
-export default function CacheSettings() {
+export default function CacheSettings({
+    showTitle = true,
+    showRecentPlaylistCount = true,
+}: {
+    showTitle?: boolean;
+    showRecentPlaylistCount?: boolean;
+}) {
     const { settings, updateSettings } = useSettings();
 
     const cacheExpiryOptions = [
@@ -32,17 +38,26 @@ export default function CacheSettings() {
 
     return (
         <div className="space-y-6">
-            <div>
-                <h3 className="text-lg font-semibold mb-4">Cache & Storage</h3>
-            </div>
+            {showTitle && (
+                <div>
+                    <h3 className="text-lg font-semibold mb-4">Cache & Storage</h3>
+                </div>
+            )}
 
             <div className="space-y-3 p-4 bg-zinc-900 rounded-lg">
                 <Label htmlFor="cache-time" className="text-base font-medium text-white">
                     Cache Expiration Time (hours)
                 </Label>
-                <p className="text-sm text-zinc-400 mb-3">
-                    How long to cache playlist data before refreshing. Minimum is 24 hours.
-                </p>
+                {settings.cacheExpireTime === 24 && (
+                    <div className="mb-3 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2">
+                        <p className="text-sm text-amber-200 font-medium">
+                            Recommended: use a higher cache duration for faster repeat loads and lower API usage.
+                        </p>
+                        <p className="text-xs text-amber-300/90 mt-1">
+                            Minimum allowed cache duration is 24 hours.
+                        </p>
+                    </div>
+                )}
                 <Select
                     value={String(settings.cacheExpireTime)}
                     onValueChange={(value) => updateSettings({ cacheExpireTime: parseInt(value, 10) })}
@@ -64,23 +79,25 @@ export default function CacheSettings() {
                 </Select>
             </div>
 
-            <div className="space-y-3 p-4 opacity-50 bg-zinc-900 rounded-lg">
-                <Label htmlFor="recent-count" className="text-base font-medium text-white">
-                    Recent Playlists Count
-                </Label>
-                <p className="text-sm text-zinc-400 mb-3">
-                    Number of recent playlists to show on the home page
-                </p>
-                <Input
-                    disabled
-                    id="recent-count"
-                    type="number"
-                    min="0"
-                    value={settings.recentPlaylistNumber}
-                    onChange={(e) => handleRecentChange(e.target.value)}
-                    className="bg-zinc-800 border-zinc-700 text-white"
-                />
-            </div>
+            {showRecentPlaylistCount && (
+                <div className="space-y-3 p-4 opacity-50 bg-zinc-900 rounded-lg">
+                    <Label htmlFor="recent-count" className="text-base font-medium text-white">
+                        Recent Playlists Count
+                    </Label>
+                    <p className="text-sm text-zinc-400 mb-3">
+                        Number of recent playlists to show on the home page
+                    </p>
+                    <Input
+                        disabled
+                        id="recent-count"
+                        type="number"
+                        min="0"
+                        value={settings.recentPlaylistNumber}
+                        onChange={(e) => handleRecentChange(e.target.value)}
+                        className="bg-zinc-800 border-zinc-700 text-white"
+                    />
+                </div>
+            )}
         </div>
     );
 }

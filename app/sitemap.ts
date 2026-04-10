@@ -14,6 +14,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: "https://ytpla.in/settings",
+      lastModified: new Date(),
+      priority: 0.7,
+    },
+    {
       url: "https://ytpla.in/privacy",
       lastModified: new Date(),
       priority: 0.6,

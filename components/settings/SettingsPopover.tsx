@@ -7,6 +7,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import DisplaySettings from "./DisplaySettings";
+import CacheSettings from "./CacheSettings";
 import Link from "next/link";
 
 export default function SettingsPopover() {
@@ -22,16 +23,13 @@ export default function SettingsPopover() {
                 className="md:w-96 bg-zinc-950 border-zinc-800 text-white p-6 max-h-[80vh] overflow-y-auto"
             >
                 <div className="space-y-6">
-                    <div>
-                        <h2 className="text-2xl font-bold mb-2">Settings</h2>
-                        <p className="text-sm text-zinc-400">
-                            Customize your experience
-                        </p>
-                    </div>
 
                     <div className="space-y-6 border-t border-zinc-800 pt-6">
                         <div>
-                            <DisplaySettings />
+                            <DisplaySettings showTitle={false} />
+                        </div>
+                        <div>
+                            <CacheSettings showTitle={false} showRecentPlaylistCount={false} />
                         </div>
                     </div>
 
