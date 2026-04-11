@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import DisplaySettings from "@/components/settings/DisplaySettings";
+import HomepageSettings from "@/components/settings/HomepageSettings";
 import CacheSettings from "@/components/settings/CacheSettings";
 import NavbarSettings from "@/components/settings/NavbarSettings";
 import AnnouncementSettings from "@/components/settings/AnnouncementSettings";
@@ -25,6 +26,10 @@ export default function SettingsPage() {
           <div className="space-y-8 mb-12">
             <section className="border-b border-zinc-800 pb-8">
               <DisplaySettings />
+            </section>
+
+            <section className="border-b border-zinc-800 pb-8">
+              <HomepageSettings />
             </section>
 
             <section className="border-b border-zinc-800 pb-8">

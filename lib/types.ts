@@ -73,7 +73,10 @@ type Settings = {
   thumbnail: boolean;
   cacheExpireTime: number;
   recentPlaylistNumber: number;
-  navbarStyle: 'icon' | 'icon-text' | 'text' | 'default';
+  showRecentPlaylists: boolean;
+  showNeedHelp: boolean;
+  showFooter: boolean;
+  navbarStyle: "icon" | "icon-text" | "text" | "default";
   navbarItems: {
     home: boolean;
     saved: boolean;

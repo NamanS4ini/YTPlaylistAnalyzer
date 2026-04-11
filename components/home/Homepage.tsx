@@ -13,9 +13,11 @@ import Recent from "./Recent";
 import Image from "next/image";
 import Link from "next/link";
 import type { Session } from "next-auth";
+import { useSettings } from "@/hooks/useSettings";
 
 export default function Homepage({ session }: { session: Session | null }) {
   const router = useRouter();
+  const { settings } = useSettings();
   const [validated, setValidated] = useState(false);
   const validateURL = (url: string) => {
     if (Number(start) > Number(end) && end != "") {
@@ -89,16 +91,18 @@ export default function Homepage({ session }: { session: Session | null }) {
   return (
     <main className="min-h-screen max-w-4xl mx-auto bg-zinc-950 text-white px-6 py-24 flex flex-col items-center relative">
       {/* Subtle gradient glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 max-w-[600px] w-full h-[300px] bg-blue-600/10 rounded-full blur-[120px] overflow-hidden pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 max-w-150 w-full h-75 bg-blue-600/10 rounded-full blur-[120px] overflow-hidden pointer-events-none" />
 
       <div className="flex flex-col items-center w-full relative z-10">
         {/* YouTube Logo */}
         <Image src="/youtube.svg" alt="YouTube Logo" width={64} height={64} />
 
         {/* Heading and Subtext */}
-        <h1 className="text-3xl sm:text-4xl font-bold text-center my-2">
-          YouTube Playlist Analyzer
-        </h1>
+        <div className="flex items-center justify-center gap-3 my-2">
+          <h1 className="text-3xl sm:text-4xl font-bold text-center">
+            YouTube Playlist Analyzer
+          </h1>
+        </div>
         <h2 className="text-zinc-400 text-center max-w-xl mb-2">
           Instantly calculate total duration, likes, views, and more. Get
           insights before you even press play.
@@ -216,7 +220,7 @@ export default function Homepage({ session }: { session: Session | null }) {
 
           {/* Liked Videos Card - Only shown when logged in */}
           {session?.user && (
-            <div className="mt-6 p-4 border border-zinc-800 bg-gradient-to-br from-pink-950/30 to-zinc-900 rounded-lg">
+            <div className="mt-6 p-4 border border-zinc-800 bg-linear-to-br from-pink-950/30 to-zinc-900 rounded-lg">
               <div className="flex items-start gap-3">
                 <div className="p-2 bg-pink-500/10 rounded-lg">
                   <Heart className="h-5 w-5 text-pink-400" />
@@ -242,43 +246,53 @@ export default function Homepage({ session }: { session: Session | null }) {
       </div>
 
       {/* Divider */}
-      <div className="w-full max-w-2xl my-8 h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
 
-      <div className="w-full relative z-10">
-        <Recent />
-      </div>
+      {(settings.showRecentPlaylists || settings.showNeedHelp || settings.showFooter) && (
+        <div className="w-full max-w-2xl my-8 h-px bg-linear-to-r from-transparent via-zinc-800 to-transparent" />
+      )}
+      {settings.showRecentPlaylists && (
+        <div className="w-full relative z-10">
+          <Recent />
+        </div>
+      )}
 
       {/* Divider */}
-      <div className="w-full max-w-2xl mt-16 h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
+      {settings.showNeedHelp && settings.showRecentPlaylists && (
+        <div className="w-full max-w-2xl mt-16 h-px bg-linear-to-r from-transparent via-zinc-800 to-transparent" />
+      )}
 
-      <div className="w-full relative z-10">
-        <Faq />
-      </div>
+      {settings.showNeedHelp && (
+        <div className="w-full relative z-10">
+          <Faq />
+        </div>
+      )}
 
       {/* Footer with Privacy and Terms */}
-      <footer className="w-full max-w-2xl mt-16 pt-8 border-t border-zinc-800">
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-zinc-400">
-          <Link href="/privacy" className="hover:text-white transition-colors">
-            Privacy Policy
-          </Link>
-          <span className="hidden sm:inline text-zinc-700">•</span>
-          <Link href="/terms" className="hover:text-white transition-colors">
-            Terms of Service
-          </Link>
-          <span className="hidden sm:inline text-zinc-700">•</span>
-          <a
-            href="https://github.com/NamanS4ini/YTPlaylistAnalyzer"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-white transition-colors"
-          >
-            GitHub
-          </a>
-        </div>
-        <p className="text-center text-xs text-zinc-500 mt-4">
-          © {new Date().getFullYear()}  YTPLA. All rights reserved.
-        </p>
-      </footer>
+      {settings.showFooter && (
+        <footer className="w-full max-w-2xl mt-16 pt-8 border-t border-zinc-800">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-zinc-400">
+            <Link href="/privacy" className="hover:text-white transition-colors">
+              Privacy Policy
+            </Link>
+            <span className="hidden sm:inline text-zinc-700">•</span>
+            <Link href="/terms" className="hover:text-white transition-colors">
+              Terms of Service
+            </Link>
+            <span className="hidden sm:inline text-zinc-700">•</span>
+            <a
+              href="https://github.com/NamanS4ini/YTPlaylistAnalyzer"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors"
+            >
+              GitHub
+            </a>
+          </div>
+          <p className="text-center text-xs text-zinc-500 mt-4">
+            © {new Date().getFullYear()}  YTPLA. All rights reserved.
+          </p>
+        </footer>
+      )}
     </main>
   );
 }

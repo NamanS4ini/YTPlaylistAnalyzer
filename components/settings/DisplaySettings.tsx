@@ -1,6 +1,6 @@
 "use client";
 
-import { useSettings } from "@/hooks/settingHook";
+import { useSettings } from "@/hooks/useSettings";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {

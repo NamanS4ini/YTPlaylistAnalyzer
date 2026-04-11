@@ -19,7 +19,7 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination";
-import { useSettings } from "@/hooks/settingHook";
+import { useSettings } from "@/hooks/useSettings";
 import { Badge } from "@/components/ui/badge";
 import {
     Tooltip,

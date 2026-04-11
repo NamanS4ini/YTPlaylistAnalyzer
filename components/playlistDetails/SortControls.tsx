@@ -13,7 +13,7 @@ export default function SortControls({ handelSort, handelReverse, Reversed }: So
             <h2 className="md:text-4xl text-2xl flex items-center gap-5 justify-between font-bold">
                 Videos in Playlist
 
-                <SettingsPopover />
+                <SettingsPopover currentPage="playlist" />
             </h2>
             <div className="flex gap-10 justify-center md:justify-start items-center p-5">
                 <h2 className="text-xl md:text-2xl flex justify-between font-bold">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useSettings } from "@/hooks/settingHook";
+import { useSettings } from "@/hooks/useSettings";
 import type { PlayListData, VideoData } from "@/lib/types";
 import {
     formatCacheAge,

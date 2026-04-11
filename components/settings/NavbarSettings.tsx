@@ -1,6 +1,6 @@
 "use client";
 
-import { useSettings } from "@/hooks/settingHook";
+import { useSettings } from "@/hooks/useSettings";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -81,14 +81,14 @@ export default function NavbarSettings() {
                             key={key}
                             className={`flex items-center justify-between p-3 bg-zinc-900 rounded-lg cursor-pointer transition-opacity ${value ? 'opacity-100' : 'opacity-60'
                                 }`}
-                            // onClick={() =>
-                            //     updateSettings({
-                            //         navbarItems: {
-                            //             ...settings.navbarItems,
-                            //             [key]: !value,
-                            //         },
-                            //     })
-                            // }
+                        // onClick={() =>
+                        //     updateSettings({
+                        //         navbarItems: {
+                        //             ...settings.navbarItems,
+                        //             [key]: !value,
+                        //         },
+                        //     })
+                        // }
                         >
                             <Label className="font-normal cursor-pointer text-white">
                                 {navbarItemLabels[key as keyof typeof navbarItemLabels]}

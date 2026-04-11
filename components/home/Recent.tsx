@@ -3,15 +3,18 @@ import Empty from "@/lib/Empty";
 import React from "react";
 import { useState, useEffect } from "react";
 import type { PlaylistCard } from "@/lib/types";
+import { useSettings } from "@/hooks/useSettings";
 import { Trash2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 const Recent = () => {
   const [recent, setRecent] = useState<PlaylistCard[]>();
+  const { settings } = useSettings();
   useEffect(() => {
     const recentPlaylists = JSON.parse(
       localStorage.getItem("recentPlaylists") || "[]"
     );
+    recentPlaylists.length = settings.recentPlaylistNumber; // Limit to the number specified in settings
     setRecent(recentPlaylists);
   }, []);
   function handleDelete(id: string) {
@@ -19,12 +22,11 @@ const Recent = () => {
     setRecent(updatedRecent);
     localStorage.setItem("recentPlaylists", JSON.stringify(updatedRecent));
   }
-
   return (
     <div className="w-full max-w-5xl mx-auto px-4">
       <h2 className="text-lg sm:text-2xl font-bold mb-10">
         Recently Analyzed Playlists
-      </h2>
+        </h2>
       <div className="flex flex-col gap-3">
         {recent?.length === 0 && (
           <Empty
@@ -42,7 +44,7 @@ const Recent = () => {
               href={`/${playlist.id}`}
               className="flex flex-1 items-start sm:items-center flex-col sm:flex-row"
             >
-              <div className="relative h-36 sm:h-32 w-full sm:w-48 md:w-56 flex-shrink-0">
+              <div className="relative h-36 sm:h-32 w-full sm:w-48 md:w-56 shrink-0">
                 <Image
                   src={playlist.thumbnail || "/default-thumbnail.jpg"}
                   fill

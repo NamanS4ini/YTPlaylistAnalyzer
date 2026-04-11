@@ -7,7 +7,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useSettings } from "@/hooks/settingHook";
+import { useSettings } from "@/hooks/useSettings";
 
 interface VideoCardProps {
     item: VideoData;
@@ -115,7 +115,7 @@ export default function VideoCard({ item, playlistId, thumbnail, convertToHrs, c
                                     </div>
                                 </TooltipTrigger>
                                 {
-                                    videoStats === "rounded" &&  <TooltipContent>
+                                    videoStats === "rounded" && <TooltipContent>
                                         <p className="font-semibold">{item.views?.toLocaleString("en-GB") || "0"} views</p>
                                     </TooltipContent>}
                             </Tooltip>

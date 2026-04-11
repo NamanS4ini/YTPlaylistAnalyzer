@@ -1,6 +1,6 @@
 "use client";
 
-import { useSettings } from "@/hooks/settingHook";
+import { useSettings } from "@/hooks/useSettings";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
@@ -16,7 +16,7 @@ export default function AnnouncementSettings() {
             <div
                 className={`flex items-center justify-between p-4 bg-zinc-900 rounded-lg cursor-pointer transition-opacity ${settings.showAnnouncement ? 'opacity-100' : 'opacity-60'
                     }`}
-                // onClick={() => updateSettings({ showAnnouncement: !settings.showAnnouncement })}
+            // onClick={() => updateSettings({ showAnnouncement: !settings.showAnnouncement })}
             >
                 <div className="space-y-1">
                     <Label className="text-base font-medium text-white cursor-pointer">Show Announcements</Label>

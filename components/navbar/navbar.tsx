@@ -21,6 +21,7 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import SignIn from "@/components/auth/signin";
 import { SignOut } from "@/components/auth/signout";
+import HomepageSettingsNavButton from "./HomepageSettingsNavButton";
 
 export default async function NavigationMenuDemo() {
   const session = await auth();
@@ -119,6 +120,7 @@ export default async function NavigationMenuDemo() {
 
           {/* Auth Section */}
           <div className="border-l border-zinc-700 pl-2 ml-2 flex items-center gap-2">
+            <HomepageSettingsNavButton />
             {session?.user ? (
               <div className="flex items-center gap-2">
                 {session.user.image && (
@@ -139,14 +141,15 @@ export default async function NavigationMenuDemo() {
         </div>
 
         {/* Mobile Hamburger Menu */}
-        <div className="md:hidden">
+        <div className="md:hidden flex items-center gap-2">
+          <HomepageSettingsNavButton />
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="text-white">
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[250px] bg-zinc-900 border-zinc-800 text-white">
+            <SheetContent side="right" className="w-62.5 bg-zinc-900 border-zinc-800 text-white">
               <SheetHeader>
                 <SheetTitle className="text-white text-left">Menu</SheetTitle>
               </SheetHeader>

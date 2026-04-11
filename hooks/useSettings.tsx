@@ -16,6 +16,9 @@ const DEFAULT_SETTINGS: Settings = {
     thumbnail: true,
     cacheExpireTime: DEFAULT_CACHE_EXPIRY_HOURS,
     recentPlaylistNumber: 5,
+    showRecentPlaylists: true,
+    showNeedHelp: true,
+    showFooter: true,
     navbarStyle: "default",
     navbarItems: {
         home: true,
@@ -56,6 +59,9 @@ function getSettings(): Settings {
             ...DEFAULT_SETTINGS,
             ...parsed,
             cacheExpireTime: normalizeCacheExpireTime(parsed.cacheExpireTime),
+            showRecentPlaylists: parsed.showRecentPlaylists ?? DEFAULT_SETTINGS.showRecentPlaylists,
+            showNeedHelp: parsed.showNeedHelp ?? DEFAULT_SETTINGS.showNeedHelp,
+            showFooter: parsed.showFooter ?? DEFAULT_SETTINGS.showFooter,
             navbarItems: {
                 ...DEFAULT_SETTINGS.navbarItems,
                 ...(parsed.navbarItems || {}),
