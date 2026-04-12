@@ -9,6 +9,7 @@ import DetailsSkeleton from "./DetailsSkeleton";
 import StatisticsCards from "./StatisticsCards";
 import VideoCard from "./VideoCard";
 import SortControls from "./SortControls";
+import PlaylistRangeControls from "./PlaylistRangeControls";
 import ErrorDisplay from "./ErrorDisplay";
 import {
     Pagination,
@@ -53,7 +54,9 @@ export default function PlaylistDetails({
 
     const {
         videoData,
+        fullVideoData,
         playlistData,
+        totalVideos,
         error,
         errorMsg,
         loading,
@@ -66,7 +69,8 @@ export default function PlaylistDetails({
         start: normalizedStart,
         end: normalizedEnd,
     });
-    const activeVideoData = displayVideoData ?? videoData;
+    const activeVideoData = displayVideoData ?? fullVideoData ?? videoData;
+    const playlistLength = totalVideos ?? 0;
 
     const wsrvLoader = ({ src, width, quality }: ImageLoaderProps) => {
         const encoded = encodeURIComponent(src);
@@ -152,7 +156,7 @@ export default function PlaylistDetails({
     }, [id]);
 
     useEffect(() => {
-        if (!playlistData || !videoData) return;
+        if (!playlistData || !activeVideoData) return;
 
         document.title = playlistData.title;
 
@@ -163,7 +167,7 @@ export default function PlaylistDetails({
             channelTitle: playlistData.channelTitle,
             channelId: playlistData.channelId || "",
             totalDuration: convertToHrs(
-                videoData.reduce(
+                activeVideoData.reduce(
                     (accumulator, item) => accumulator + (item.duration ? Number(item.duration) : 0),
                     0
                 )
@@ -177,15 +181,20 @@ export default function PlaylistDetails({
 
         filteredPlaylists.unshift(currentPlaylist);
         localStorage.setItem("recentPlaylists", JSON.stringify(filteredPlaylists.slice(0, 10)));
-    }, [playlistData, videoData]);
+    }, [playlistData, activeVideoData]);
 
     useEffect(() => {
-        setDisplayVideoData(null);
-    }, [id, normalizedStart, normalizedEnd]);
+        if (!fullVideoData) {
+            setDisplayVideoData(null);
+            return;
+        }
+
+        setDisplayVideoData(fullVideoData);
+    }, [fullVideoData]);
 
     useEffect(() => {
-        setDisplayVideoData(videoData);
-    }, [videoData]);
+        setCurrentPage(1);
+    }, [displayVideoData]);
 
     useEffect(() => {
         if (!(loading && activeVideoData === null && error === null)) {
@@ -302,6 +311,14 @@ export default function PlaylistDetails({
                         handelSort={handelSort}
                         handelReverse={handelReverse}
                         Reversed={Reversed}
+                    />
+
+                    <PlaylistRangeControls
+                        videoData={fullVideoData}
+                        playlistLength={playlistLength}
+                        initialStart={Number.parseInt(normalizedStart, 10) || 1}
+                        initialEnd={Number.parseInt(normalizedEnd, 10) || playlistLength}
+                        onFilteredVideosChange={setDisplayVideoData}
                     />
 
                     <div className="flex justify-center items-center gap-2 text-sm text-zinc-400 mt-4">

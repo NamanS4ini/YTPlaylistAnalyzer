@@ -28,9 +28,9 @@ export default function SettingsPopover({ currentPage = "playlist" }: SettingsPo
             </PopoverTrigger>
             <PopoverContent
                 align="end"
-                className="md:w-96 bg-zinc-950 border-zinc-800 text-white p-6 max-h-[80vh] overflow-y-auto"
+                className="md:w-96 bg-zinc-950 border-zinc-800 text-white max-h-[80vh] overflow-y-auto"
             >
-                <div className="space-y-6">
+                <div>
                     {showHomepageSettings && (
                         <div className="space-y-6 border-t border-zinc-800 pt-6">
                             <HomepageSettings showTitle={false} />
@@ -38,7 +38,7 @@ export default function SettingsPopover({ currentPage = "playlist" }: SettingsPo
                     )}
 
                     {showPlaylistSettings && (
-                        <div className="space-y-6 border-t border-zinc-800 pt-6">
+                        <div className="space-y-6">
                             <div>
                                 <DisplaySettings showTitle={false} />
                             </div>

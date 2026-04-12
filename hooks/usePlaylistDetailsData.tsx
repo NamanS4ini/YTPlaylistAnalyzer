@@ -14,7 +14,9 @@ import {
 
 type PlaylistDetailsState = {
     videoData: VideoData[] | null;
+    fullVideoData: VideoData[] | null;
     playlistData: PlayListData | null;
+    totalVideos: number | null;
     error: number | null;
     errorMsg: string | null;
     loading: boolean;
@@ -24,7 +26,9 @@ type PlaylistDetailsState = {
 
 const DEFAULT_STATE: PlaylistDetailsState = {
     videoData: null,
+    fullVideoData: null,
     playlistData: null,
+    totalVideos: null,
     error: null,
     errorMsg: null,
     loading: true,
@@ -161,7 +165,9 @@ export function usePlaylistDetailsData({
                         ...DEFAULT_STATE,
                         loading: false,
                         videoData: videos,
+                        fullVideoData: videos,
                         playlistData,
+                        totalVideos: videos.length,
                     });
                     return;
                 } catch (error) {
@@ -194,7 +200,10 @@ export function usePlaylistDetailsData({
                         ...DEFAULT_STATE,
                         loading: false,
                         videoData: slicePlaylistVideos(cached.videoData, start, end),
+                        fullVideoData: cached.videoData,
                         playlistData: cached.playlistData,
+                        totalVideos:
+                            cached.playlistData?.totalVideos ?? cached.videoData.length,
                         isUsingCache: true,
                         cacheAgeLabel: formatCacheAge(cached.ageHours),
                     });
@@ -242,7 +251,9 @@ export function usePlaylistDetailsData({
                     ...DEFAULT_STATE,
                     loading: false,
                     videoData: slicePlaylistVideos(videoData, start, end),
+                    fullVideoData: videoData,
                     playlistData,
+                    totalVideos: playlistData?.totalVideos ?? videoData.length,
                 });
             } catch (error) {
                 if (!isActive) {
