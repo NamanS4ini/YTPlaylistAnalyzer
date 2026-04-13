@@ -21,7 +21,6 @@ const DEFAULT_SETTINGS: Settings = {
     showFooter: true,
     navbarStyle: "default",
     navbarItems: {
-        home: true,
         saved: true,
         about: true,
         settings: true,

@@ -5,6 +5,7 @@ import { X, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { AnnouncementType } from "@/lib/types";
+import { useSettings } from "@/hooks/useSettings";
 
 
 
@@ -14,14 +15,21 @@ const Announcement = () => {
     {
       id: 1024,
       message: "You can now sign in to analyze your Liked Videos playlist.\nDuring sign-in, you may see a Google warning because the app is currently under review. This is expected and safe to proceed.",
-      enabled: true,
+      enabled: false,
     },
     {
       id: 1025,
       message: "Support the project by <a style=\"color:aqua; text-decoration:underline;\" href=\"https://buymeacoffee.com/namansaini\" target=\"_blank\" rel=\"noopener noreferrer\">buying me a coffee!</a>",
       enabled: true,
     }, 
+    {
+      id: 1026,
+      message: "Settings are now available for customization!\nClick the settings icon in the top right corner to access them.",
+      enabled: true,
+    },
   ];
+
+  const { settings } = useSettings();
 
   const [dismissedIds, setDismissedIds] = useState<number[]>([]);
   useEffect(() => {
@@ -44,7 +52,7 @@ const Announcement = () => {
   const visibleAnnouncements = announcements
     .filter((a) => a.enabled && !dismissedIds.includes(a.id))
 
-  if (visibleAnnouncements.length === 0) {
+  if (visibleAnnouncements.length === 0 || !settings.showAnnouncement) {
     return null;
   }
 

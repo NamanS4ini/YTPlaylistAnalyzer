@@ -1,3 +1,5 @@
+"use client";
+
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -18,13 +20,15 @@ import {
 import { CircleHelpIcon, Github, CircleAlertIcon, Menu, Upload, Home, Bookmark, UploadIcon, Coffee } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { auth } from "@/lib/auth";
 import SignIn from "@/components/auth/signin";
 import { SignOut } from "@/components/auth/signout";
 import HomepageSettingsNavButton from "./HomepageSettingsNavButton";
+import { useSession } from "next-auth/react";
+import { useSettings } from "@/hooks/useSettings";
 
-export default async function NavigationMenuDemo() {
-  const session = await auth();
+export default function NavigationMenuDemo() {
+  const { data: session } = useSession();
+  const { settings } = useSettings();
 
   return (
     <div className="fixed backdrop-blur-sm bg-black/70 z-50 flex justify-center p-2 w-full top-0">
@@ -46,75 +50,89 @@ export default async function NavigationMenuDemo() {
                   Home
                 </Link>
               </NavigationMenuItem>
-              <NavigationMenuItem>
-                <Link
-                  href="/saved"
-                  className="px-2 text-sm py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
-                  Saved
-                </Link>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuTrigger className="sm:px-4 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
-                  More
-                </NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="w-48">
-                    <li>
-                      <NavigationMenuLink asChild>
-                        <Link href="/about">
-                          <h1 className="font-medium flex items-center gap-2">
-                            <CircleHelpIcon />
-                            About
-                          </h1>
-                        </Link>
-                      </NavigationMenuLink>
-                    </li>
-                    <li>
-                      <NavigationMenuLink asChild>
-                        <Link href="/feedback">
-                          <h1 className="font-medium flex items-center gap-2">
-                            <CircleAlertIcon />
-                            Feedback
-                          </h1>
-                        </Link>
-                      </NavigationMenuLink>
-                    </li>
-                    <li>
-                      <NavigationMenuLink asChild>
-                        <Link href="https://buymeacoffee.com/namansaini" target="_blank" rel="noopener noreferrer">
-                          <h1 className="font-medium flex items-center gap-2">
-                            <Coffee />
-                            Buy me a Coffee
-                          </h1>
-                        </Link>
-                      </NavigationMenuLink>
-                    </li>
-                    <li>
-                      <NavigationMenuLink asChild>
-                        <Link href="/upload">
-                          <h1 className="font-medium flex items-center gap-2">
-                            <UploadIcon />
-                            Upload
-                          </h1>
-                        </Link>
-                      </NavigationMenuLink>
-                    </li>
-                    <li>
-                      <NavigationMenuLink asChild>
-                        <Link
-                          target="_blank"
-                          href="https://github.com/NamanS4ini/YTPlaylistAnalyzer"
-                        >
-                          <h1 className="font-medium flex items-center gap-2">
-                            <Github />
-                            Github
-                          </h1>
-                        </Link>
-                      </NavigationMenuLink>
-                    </li>
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
+              {settings.navbarItems.saved && (
+                <NavigationMenuItem>
+                  <Link
+                    href="/saved"
+                    className="px-2 text-sm py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+                    Saved
+                  </Link>
+                </NavigationMenuItem>
+              )}
+              {(settings.navbarItems.about || settings.navbarItems.feedback || settings.navbarItems.buyMeACoffee || settings.navbarItems.upload || settings.navbarItems.github) && (
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="sm:px-4 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+                    More
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="w-48">
+                      {settings.navbarItems.about && (
+                        <li>
+                          <NavigationMenuLink asChild>
+                            <Link href="/about">
+                              <h1 className="font-medium flex items-center gap-2">
+                                <CircleHelpIcon />
+                                About
+                              </h1>
+                            </Link>
+                          </NavigationMenuLink>
+                        </li>
+                      )}
+                      {settings.navbarItems.feedback && (
+                        <li>
+                          <NavigationMenuLink asChild>
+                            <Link href="/feedback">
+                              <h1 className="font-medium flex items-center gap-2">
+                                <CircleAlertIcon />
+                                Feedback
+                              </h1>
+                            </Link>
+                          </NavigationMenuLink>
+                        </li>
+                      )}
+                      {settings.navbarItems.buyMeACoffee && (
+                        <li>
+                          <NavigationMenuLink asChild>
+                            <Link href="https://buymeacoffee.com/namansaini" target="_blank" rel="noopener noreferrer">
+                              <h1 className="font-medium flex items-center gap-2">
+                                <Coffee />
+                                Buy me a Coffee
+                              </h1>
+                            </Link>
+                          </NavigationMenuLink>
+                        </li>
+                      )}
+                      {settings.navbarItems.upload && (
+                        <li>
+                          <NavigationMenuLink asChild>
+                            <Link href="/upload">
+                              <h1 className="font-medium flex items-center gap-2">
+                                <UploadIcon />
+                                Upload
+                              </h1>
+                            </Link>
+                          </NavigationMenuLink>
+                        </li>
+                      )}
+                      {settings.navbarItems.github && (
+                        <li>
+                          <NavigationMenuLink asChild>
+                            <Link
+                              target="_blank"
+                              href="https://github.com/NamanS4ini/YTPlaylistAnalyzer"
+                            >
+                              <h1 className="font-medium flex items-center gap-2">
+                                <Github />
+                                Github
+                              </h1>
+                            </Link>
+                          </NavigationMenuLink>
+                        </li>
+                      )}
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              )}
             </NavigationMenuList>
           </NavigationMenu>
 
@@ -162,47 +180,57 @@ export default async function NavigationMenuDemo() {
                     Home
                   </Link>
                 </SheetClose>
-                <SheetClose asChild>
-                  <Link
-                    href="/saved"
-                    className="text-lg py-2 hover:text-blue-400 transition-colors flex items-center gap-2">
-                    <Bookmark className="h-5 w-5" />
-                    Saved
-                  </Link>
-                </SheetClose>
-                <SheetClose asChild>
-                  <Link
-                    href="/upload"
-                    className="text-lg py-2 hover:text-blue-400 transition-colors flex items-center gap-2">
-                    <Upload className="h-5 w-5" />
-                    Upload
-                  </Link>
-                </SheetClose>
-                <SheetClose asChild>
-                  <Link
-                    href="/about"
-                    className="text-lg py-2 hover:text-blue-400 transition-colors flex items-center gap-2">
-                    <CircleHelpIcon className="h-5 w-5" />
-                    About
-                  </Link>
-                </SheetClose>
-                <SheetClose asChild>
-                  <Link
-                    href="/feedback"
-                    className="text-lg py-2 hover:text-blue-400 transition-colors flex items-center gap-2">
-                    <CircleAlertIcon className="h-5 w-5" />
-                    Feedback
-                  </Link>
-                </SheetClose>
-                <SheetClose asChild>
-                  <Link
-                    target="_blank"
-                    href="https://github.com/NamanS4ini/YTPlaylistAnalyzer"
-                    className="text-lg py-2 hover:text-blue-400 transition-colors flex items-center gap-2">
-                    <Github className="h-5 w-5" />
-                    Github
-                  </Link>
-                </SheetClose>
+                {settings.navbarItems.saved && (
+                  <SheetClose asChild>
+                    <Link
+                      href="/saved"
+                      className="text-lg py-2 hover:text-blue-400 transition-colors flex items-center gap-2">
+                      <Bookmark className="h-5 w-5" />
+                      Saved
+                    </Link>
+                  </SheetClose>
+                )}
+                {settings.navbarItems.upload && (
+                  <SheetClose asChild>
+                    <Link
+                      href="/upload"
+                      className="text-lg py-2 hover:text-blue-400 transition-colors flex items-center gap-2">
+                      <Upload className="h-5 w-5" />
+                      Upload
+                    </Link>
+                  </SheetClose>
+                )}
+                {settings.navbarItems.about && (
+                  <SheetClose asChild>
+                    <Link
+                      href="/about"
+                      className="text-lg py-2 hover:text-blue-400 transition-colors flex items-center gap-2">
+                      <CircleHelpIcon className="h-5 w-5" />
+                      About
+                    </Link>
+                  </SheetClose>
+                )}
+                {settings.navbarItems.feedback && (
+                  <SheetClose asChild>
+                    <Link
+                      href="/feedback"
+                      className="text-lg py-2 hover:text-blue-400 transition-colors flex items-center gap-2">
+                      <CircleAlertIcon className="h-5 w-5" />
+                      Feedback
+                    </Link>
+                  </SheetClose>
+                )}
+                {settings.navbarItems.github && (
+                  <SheetClose asChild>
+                    <Link
+                      target="_blank"
+                      href="https://github.com/NamanS4ini/YTPlaylistAnalyzer"
+                      className="text-lg py-2 hover:text-blue-400 transition-colors flex items-center gap-2">
+                      <Github className="h-5 w-5" />
+                      Github
+                    </Link>
+                  </SheetClose>
+                )}
 
                 {/* Auth Section for Mobile */}
                 <div className="border-t border-zinc-700 pt-4 mt-4">

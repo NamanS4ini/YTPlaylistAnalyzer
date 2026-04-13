@@ -15,7 +15,6 @@ export default function NavbarSettings() {
     const { settings, updateSettings } = useSettings();
 
     const navbarItemLabels: Record<string, string> = {
-        home: "Home",
         saved: "Saved Playlists",
         about: "About",
         settings: "Settings",
@@ -27,25 +26,24 @@ export default function NavbarSettings() {
     };
 
     const navbarStyleOptions = [
-        { value: "default", label: "Default (Icon + Text)" },
+        { value: "default", label: "Default" },
         { value: "icon", label: "Icon Only" },
         { value: "icon-text", label: "Icon + Text Compact" },
         { value: "text", label: "Text Only" },
     ];
 
     return (
-        <div className="space-y-6 opacity-50">
+        <div className="space-y-6">
             <div>
                 <h3 className="text-lg font-semibold mb-4">Navbar Settings</h3>
             </div>
 
-            <div className="space-y-3 p-4 bg-zinc-900 rounded-lg">
+            <div className="space-y-3 p-4 hidden bg-zinc-900 rounded-lg">
                 <Label className="text-base font-medium text-white">Navbar Style</Label>
                 <p className="text-sm text-zinc-400 mb-3">
                     Choose how navigation items are displayed
                 </p>
                 <Select
-                    disabled
                     value={settings.navbarStyle}
                     onValueChange={(value) =>
                         updateSettings({
@@ -76,38 +74,39 @@ export default function NavbarSettings() {
                     Toggle visibility of navigation items
                 </p>
                 <div className="space-y-2">
-                    {Object.entries(settings.navbarItems).map(([key, value]) => (
-                        <div
-                            key={key}
-                            className={`flex items-center justify-between p-3 bg-zinc-900 rounded-lg cursor-pointer transition-opacity ${value ? 'opacity-100' : 'opacity-60'
-                                }`}
-                        // onClick={() =>
-                        //     updateSettings({
-                        //         navbarItems: {
-                        //             ...settings.navbarItems,
-                        //             [key]: !value,
-                        //         },
-                        //     })
-                        // }
-                        >
-                            <Label className="font-normal cursor-pointer text-white">
-                                {navbarItemLabels[key as keyof typeof navbarItemLabels]}
-                            </Label>
-                            <Switch
-                                disabled
-                                checked={value}
-                                onCheckedChange={(checked) =>
+                    {Object.entries(settings.navbarItems)
+                        .filter(([key]) => key in navbarItemLabels)
+                        .map(([key, value]) => (
+                            <div
+                                key={key}
+                                className={`flex items-center justify-between p-3 bg-zinc-900 rounded-lg cursor-pointer transition-opacity ${value ? 'opacity-100' : 'opacity-60'
+                                    }`}
+                                onClick={() =>
                                     updateSettings({
                                         navbarItems: {
                                             ...settings.navbarItems,
-                                            [key]: checked,
+                                            [key]: !value,
                                         },
                                     })
                                 }
-                                onClick={(e) => e.stopPropagation()}
-                            />
-                        </div>
-                    ))}
+                            >
+                                <Label className="font-normal cursor-pointer text-white">
+                                    {navbarItemLabels[key as keyof typeof navbarItemLabels]}
+                                </Label>
+                                <Switch
+                                    checked={value}
+                                    onCheckedChange={(checked) =>
+                                        updateSettings({
+                                            navbarItems: {
+                                                ...settings.navbarItems,
+                                                [key]: checked,
+                                            },
+                                        })
+                                    }
+                                    onClick={(e) => e.stopPropagation()}
+                                />
+                            </div>
+                        ))}
                 </div>
             </div>
         </div>

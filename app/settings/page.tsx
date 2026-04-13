@@ -20,7 +20,7 @@ export default function SettingsPage() {
             <p className="text-zinc-400 mt-2">
               Customize your YouTube Playlist Analyzer experience
             </p>
-            <p className="text-red-500">Note: Some settings may not be available for now as they are still being developed.</p>
+            {/* <p className="text-red-500">Note: Some settings may not be available for now as they are still being developed.</p> */}
           </div>
 
           <div className="space-y-8 mb-12">

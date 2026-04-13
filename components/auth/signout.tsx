@@ -1,4 +1,6 @@
-import { signOut } from "@/lib/auth"
+"use client";
+
+import { signOutUser } from "@/lib/auth-actions"
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -54,10 +56,7 @@ export function SignOut() {
                         </Button>
                     </DialogTrigger>
                     <form
-                        action={async () => {
-                            "use server"
-                            await signOut()
-                        }}
+                        action={signOutUser}
                         className="flex-1"
                     >
                         <Button

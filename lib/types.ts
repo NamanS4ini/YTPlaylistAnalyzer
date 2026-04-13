@@ -78,7 +78,6 @@ type Settings = {
   showFooter: boolean;
   navbarStyle: "icon" | "icon-text" | "text" | "default";
   navbarItems: {
-    home: boolean;
     saved: boolean;
     about: boolean;
     settings: boolean;

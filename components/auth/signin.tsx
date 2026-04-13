@@ -1,4 +1,6 @@
-import { signIn } from "@/lib/auth"
+"use client";
+
+import { signInWithGoogle } from "@/lib/auth-actions"
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -60,10 +62,7 @@ export default function SignIn() {
 
                     {/* Sign In Button */}
                     <form
-                        action={async () => {
-                            "use server"
-                            await signIn("google")
-                        }}
+                        action={signInWithGoogle}
                         className="w-full"
                     >
                         <Button
