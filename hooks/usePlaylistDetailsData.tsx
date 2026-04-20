@@ -17,6 +17,9 @@ type PlaylistDetailsState = {
     fullVideoData: VideoData[] | null;
     playlistData: PlayListData | null;
     totalVideos: number | null;
+    loadedVideos: number;
+    remainingVideos: number;
+    isProgressiveLoading: boolean;
     error: number | null;
     errorMsg: string | null;
     loading: boolean;
@@ -29,6 +32,9 @@ const DEFAULT_STATE: PlaylistDetailsState = {
     fullVideoData: null,
     playlistData: null,
     totalVideos: null,
+    loadedVideos: 0,
+    remainingVideos: 0,
+    isProgressiveLoading: false,
     error: null,
     errorMsg: null,
     loading: true,
@@ -36,7 +42,7 @@ const DEFAULT_STATE: PlaylistDetailsState = {
     cacheAgeLabel: null,
 };
 
-function getFullFetchEndpoint(id: string) {
+function getLegacyFullFetchEndpoint(id: string) {
     const fullEnd = getFullPlaylistEnd();
 
     if (id === "WL" || id === "LL") {
@@ -56,6 +62,56 @@ function applyFetchedPlaylistData(data: unknown) {
         videoData: Array.isArray(payload.videoData) ? payload.videoData : null,
         playlistData: payload.playlistData ?? null,
     };
+}
+
+function getPlaylistMetadataEndpoint(id: string) {
+    return `/api/details?id=${id}&mode=playlist`;
+}
+
+function getPlaylistBatchEndpoint(id: string, pageToken?: string | null) {
+    const query = new URLSearchParams({
+        id,
+        mode: "batch",
+    });
+
+    if (pageToken) {
+        query.set("pageToken", pageToken);
+    }
+
+    return `/api/details?${query.toString()}`;
+}
+
+function applyPlaylistMetadata(data: unknown) {
+    const payload = data as Partial<{
+        playlistData: PlayListData | null;
+    }>;
+
+    return {
+        playlistData: payload.playlistData ?? null,
+        totalVideos: Number(payload.playlistData?.totalVideos || 0),
+    };
+}
+
+function applyPlaylistBatch(data: unknown) {
+    const payload = data as Partial<{
+        videoData: VideoData[];
+        nextPageToken: string | null;
+        rawBatchSize: number;
+    }>;
+
+    return {
+        videoData: Array.isArray(payload.videoData) ? payload.videoData : [],
+        nextPageToken:
+            typeof payload.nextPageToken === "string" ? payload.nextPageToken : null,
+        rawBatchSize:
+            typeof payload.rawBatchSize === "number" && Number.isFinite(payload.rawBatchSize)
+                ? payload.rawBatchSize
+                : 0,
+    };
+}
+
+function isSpecialPlaylist(id: string) {
+    return id === "WL" || id === "LL";
 }
 
 export function usePlaylistDetailsData({
@@ -204,6 +260,9 @@ export function usePlaylistDetailsData({
                         playlistData: cached.playlistData,
                         totalVideos:
                             cached.playlistData?.totalVideos ?? cached.videoData.length,
+                        loadedVideos: cached.videoData.length,
+                        remainingVideos: 0,
+                        isProgressiveLoading: false,
                         isUsingCache: true,
                         cacheAgeLabel: formatCacheAge(cached.ageHours),
                     });
@@ -212,13 +271,38 @@ export function usePlaylistDetailsData({
             }
 
             try {
-                const response = await fetch(getFullFetchEndpoint(id), {
-                    signal: controller.signal,
-                });
+                if (isSpecialPlaylist(id)) {
+                    const response = await fetch(getLegacyFullFetchEndpoint(id), {
+                        signal: controller.signal,
+                    });
 
-                const payload = await response.json().catch(() => null);
+                    const payload = await response.json().catch(() => null);
 
-                if (!response.ok) {
+                    if (!response.ok) {
+                        if (!isActive) {
+                            return;
+                        }
+
+                        setState({
+                            ...DEFAULT_STATE,
+                            loading: false,
+                            error: response.status,
+                            errorMsg: payload?.message || "Something went wrong",
+                        });
+                        return;
+                    }
+
+                    const { videoData, playlistData } = applyFetchedPlaylistData(payload);
+
+                    if (!videoData) {
+                        throw new Error("Invalid playlist data received from the server.");
+                    }
+
+                    savePlaylistCache(id, {
+                        playlistData,
+                        videoData,
+                    });
+
                     if (!isActive) {
                         return;
                     }
@@ -226,35 +310,128 @@ export function usePlaylistDetailsData({
                     setState({
                         ...DEFAULT_STATE,
                         loading: false,
-                        error: response.status,
-                        errorMsg: payload?.message || "Something went wrong",
+                        videoData: slicePlaylistVideos(videoData, start, end),
+                        fullVideoData: videoData,
+                        playlistData,
+                        totalVideos: playlistData?.totalVideos ?? videoData.length,
+                        loadedVideos: videoData.length,
+                        remainingVideos: 0,
                     });
                     return;
                 }
 
-                const { videoData, playlistData } = applyFetchedPlaylistData(payload);
+                const metadataResponse = await fetch(getPlaylistMetadataEndpoint(id), {
+                    signal: controller.signal,
+                });
+                const metadataPayload = await metadataResponse.json().catch(() => null);
 
-                if (!videoData) {
-                    throw new Error("Invalid playlist data received from the server.");
+                if (!metadataResponse.ok) {
+                    if (!isActive) {
+                        return;
+                    }
+
+                    setState({
+                        ...DEFAULT_STATE,
+                        loading: false,
+                        error: metadataResponse.status,
+                        errorMsg: metadataPayload?.message || "Something went wrong",
+                    });
+                    return;
                 }
+
+                const { playlistData, totalVideos } = applyPlaylistMetadata(metadataPayload);
+
+                if (!isActive) {
+                    return;
+                }
+
+                setState((prev) => ({
+                    ...prev,
+                    videoData: [],
+                    fullVideoData: [],
+                    playlistData,
+                    totalVideos,
+                    loadedVideos: 0,
+                    remainingVideos: totalVideos,
+                    isProgressiveLoading: true,
+                    loading: true,
+                }));
+
+                const accumulatedVideos: VideoData[] = [];
+                let processedVideoCount = 0;
+                let nextPageToken: string | null = null;
+
+                do {
+                    const batchResponse = await fetch(
+                        getPlaylistBatchEndpoint(id, nextPageToken),
+                        {
+                            signal: controller.signal,
+                        }
+                    );
+                    const batchPayload = await batchResponse.json().catch(() => null);
+
+                    if (!batchResponse.ok) {
+                        if (!isActive) {
+                            return;
+                        }
+
+                        setState({
+                            ...DEFAULT_STATE,
+                            loading: false,
+                            error: batchResponse.status,
+                            errorMsg: batchPayload?.message || "Something went wrong",
+                        });
+                        return;
+                    }
+
+                    const {
+                        videoData: batchVideos,
+                        nextPageToken: nextToken,
+                        rawBatchSize,
+                    } =
+                        applyPlaylistBatch(batchPayload);
+
+                    accumulatedVideos.push(...batchVideos);
+                    processedVideoCount += rawBatchSize;
+                    nextPageToken = nextToken;
+
+                    if (!isActive) {
+                        return;
+                    }
+
+                    const loadedVideos = accumulatedVideos.length;
+                    const remainingVideos = Math.max(totalVideos - processedVideoCount, 0);
+
+                    setState((prev) => ({
+                        ...prev,
+                        loading: true,
+                        isProgressiveLoading: nextPageToken !== null,
+                        fullVideoData: [...accumulatedVideos],
+                        videoData: slicePlaylistVideos(accumulatedVideos, start, end),
+                        loadedVideos,
+                        remainingVideos,
+                    }));
+                } while (nextPageToken);
 
                 savePlaylistCache(id, {
                     playlistData,
-                    videoData,
+                    videoData: accumulatedVideos,
                 });
 
                 if (!isActive) {
                     return;
                 }
 
-                setState({
-                    ...DEFAULT_STATE,
+                setState((prev) => ({
+                    ...prev,
                     loading: false,
-                    videoData: slicePlaylistVideos(videoData, start, end),
-                    fullVideoData: videoData,
-                    playlistData,
-                    totalVideos: playlistData?.totalVideos ?? videoData.length,
-                });
+                    isProgressiveLoading: false,
+                    fullVideoData: accumulatedVideos,
+                    videoData: slicePlaylistVideos(accumulatedVideos, start, end),
+                    totalVideos: playlistData?.totalVideos ?? accumulatedVideos.length,
+                    loadedVideos: accumulatedVideos.length,
+                    remainingVideos: 0,
+                }));
             } catch (error) {
                 if (!isActive) {
                     return;

@@ -57,6 +57,9 @@ export default function PlaylistDetails({
         fullVideoData,
         playlistData,
         totalVideos,
+        loadedVideos,
+        remainingVideos,
+        isProgressiveLoading,
         error,
         errorMsg,
         loading,
@@ -71,6 +74,7 @@ export default function PlaylistDetails({
     });
     const activeVideoData = displayVideoData ?? fullVideoData ?? videoData;
     const playlistLength = totalVideos ?? 0;
+    const processingToastId = "playlist-processing";
 
     const wsrvLoader = ({ src, width, quality }: ImageLoaderProps) => {
         const encoded = encodeURIComponent(src);
@@ -197,29 +201,36 @@ export default function PlaylistDetails({
     }, [displayVideoData]);
 
     useEffect(() => {
-        if (!(loading && activeVideoData === null && error === null)) {
+        if (!isProgressiveLoading) {
+            toast.dismiss(processingToastId);
             return;
         }
 
-        let toastId: string | number | undefined;
-        const loadingTimeout = setTimeout(() => {
-            toastId = toast.info(
-                "This playlist seems large and will take some time to load. Please wait...",
-                { duration: Infinity }
-            );
-        }, 3000);
-
-        return () => {
-            clearTimeout(loadingTimeout);
-            if (toastId) {
-                toast.dismiss(toastId);
+        const safeRemaining = Math.max(remainingVideos, 0);
+        const safeLoaded = Math.max(loadedVideos, 0);
+        toast.info(
+            `Videos are being processed in the background. Please wait. Loaded: ${safeLoaded}. Remaining videos: ${safeRemaining}.`,
+            {
+                id: processingToastId,
+                duration: Infinity,
             }
-        };
-    }, [loading, activeVideoData, error]);
+        );
+    }, [isProgressiveLoading, loadedVideos, remainingVideos]);
 
-    if (loading && activeVideoData === null && error === null) {
+    useEffect(() => {
+        return () => {
+            toast.dismiss(processingToastId);
+        };
+    }, [processingToastId]);
+
+    const shouldShowSkeleton =
+        loading &&
+        error === null &&
+        (activeVideoData === null || (isProgressiveLoading && loadedVideos === 0));
+
+    if (shouldShowSkeleton) {
         return (
-            <div className="flex flex-col items-center justify-center bg-zinc-950 text-white px-4">
+            <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 text-white px-4">
                 <DetailsSkeleton />
             </div>
         );
@@ -231,7 +242,7 @@ export default function PlaylistDetails({
 
     if (activeVideoData) {
         return (
-            <div className="flex flex-col pt-16 items-center bg-zinc-950 text-white px-4">
+            <div className="min-h-screen flex flex-col pt-16 items-center bg-zinc-950 text-white px-4">
                 <div className="w-full max-w-6xl mx-auto">
                     <div className="flex items-center justify-between md:flex-row flex-col gap-4 py-5">
                         <div className="flex items-center justify-center gap-3 flex-wrap">
@@ -318,6 +329,7 @@ export default function PlaylistDetails({
                         playlistLength={playlistLength}
                         initialStart={Number.parseInt(normalizedStart, 10) || 1}
                         initialEnd={Number.parseInt(normalizedEnd, 10) || playlistLength}
+                        disabled={loading}
                         onFilteredVideosChange={setDisplayVideoData}
                     />
 

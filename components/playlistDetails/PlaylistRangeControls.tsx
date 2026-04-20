@@ -10,6 +10,7 @@ type PlaylistRangeControlsProps = {
     playlistLength: number;
     initialStart: number;
     initialEnd: number;
+    disabled?: boolean;
     onFilteredVideosChange: (videos: VideoData[] | null) => void;
 };
 
@@ -40,6 +41,7 @@ export default function PlaylistRangeControls({
     playlistLength,
     initialStart,
     initialEnd,
+    disabled = false,
     onFilteredVideosChange,
 }: PlaylistRangeControlsProps) {
     const [draftRange, setDraftRange] = useState<[number, number]>(() =>
@@ -125,7 +127,7 @@ export default function PlaylistRangeControls({
     };
 
     return (
-        <div className="w-full max-w-4xl mx-auto px-5 mt-4 mb-6">
+        <div className={`w-full max-w-4xl mx-auto px-5 mt-4 mb-6 ${disabled ? "opacity-60" : ""}`}>
             <div className="grid items-center gap-4 md:grid-cols-[120px_minmax(0,1fr)_120px]">
                 <div className="space-y-2">
                     <label className="text-xs font-medium text-zinc-400">Start</label>
@@ -136,6 +138,7 @@ export default function PlaylistRangeControls({
                         value={draftStart}
                         onChange={(event) => handleStartChange(event.target.value)}
                         onBlur={restoreStart}
+                        disabled={disabled}
                         className="dark bg-zinc-900 border-zinc-800 text-white"
                     />
                 </div>
@@ -148,6 +151,7 @@ export default function PlaylistRangeControls({
                             max={playlistLength}
                             step={1}
                             minStepsBetweenThumbs={0}
+                            disabled={disabled}
                             onValueChange={(value: number[]) => setDraftRange([value[0], value[1]])}
                             onValueCommit={(value: number[]) => commitRange(value[0], value[1])}
                             aria-label="Playlist range"
@@ -164,6 +168,7 @@ export default function PlaylistRangeControls({
                         value={draftEnd}
                         onChange={(event) => handleEndChange(event.target.value)}
                         onBlur={restoreEnd}
+                        disabled={disabled}
                         className="dark bg-zinc-900 border-zinc-800 text-white"
                     />
                 </div>
