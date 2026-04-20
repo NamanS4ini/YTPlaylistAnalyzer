@@ -271,7 +271,7 @@ export function usePlaylistDetailsData({
             }
 
             let accumulatedVideos: VideoData[] = [];
-            
+
             try {
                 if (isSpecialPlaylist(id)) {
                     const response = await fetch(getLegacyFullFetchEndpoint(id), {
