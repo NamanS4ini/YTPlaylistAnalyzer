@@ -270,6 +270,8 @@ export function usePlaylistDetailsData({
                 }
             }
 
+            let accumulatedVideos: VideoData[] = [];
+            
             try {
                 if (isSpecialPlaylist(id)) {
                     const response = await fetch(getLegacyFullFetchEndpoint(id), {
@@ -357,7 +359,7 @@ export function usePlaylistDetailsData({
                     loading: true,
                 }));
 
-                const accumulatedVideos: VideoData[] = [];
+                accumulatedVideos = [];
                 let processedVideoCount = 0;
                 let nextPageToken: string | null = null;
 
@@ -373,6 +375,16 @@ export function usePlaylistDetailsData({
                     if (!batchResponse.ok) {
                         if (!isActive) {
                             return;
+                        }
+
+                        const hasLoadedData = accumulatedVideos.length > 0;
+                        if (hasLoadedData) {
+                            setState((prev) => ({
+                                ...prev,
+                                loading: false,
+                                isProgressiveLoading: false,
+                            }));
+                            break;
                         }
 
                         setState({
@@ -413,10 +425,14 @@ export function usePlaylistDetailsData({
                     }));
                 } while (nextPageToken);
 
-                savePlaylistCache(id, {
-                    playlistData,
-                    videoData: accumulatedVideos,
-                });
+                try {
+                    savePlaylistCache(id, {
+                        playlistData,
+                        videoData: accumulatedVideos,
+                    });
+                } catch (_cacheError) {
+                    console.warn("Failed to save playlist cache, continuing anyway");
+                }
 
                 if (!isActive) {
                     return;
@@ -438,6 +454,16 @@ export function usePlaylistDetailsData({
                 }
 
                 if (error instanceof DOMException && error.name === "AbortError") {
+                    return;
+                }
+
+                const hasLoadedData = accumulatedVideos.length > 0;
+                if (hasLoadedData) {
+                    setState((prev) => ({
+                        ...prev,
+                        loading: false,
+                        isProgressiveLoading: false,
+                    }));
                     return;
                 }
 

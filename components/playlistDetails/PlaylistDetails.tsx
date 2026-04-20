@@ -218,6 +218,12 @@ export default function PlaylistDetails({
     }, [isProgressiveLoading, loadedVideos, remainingVideos]);
 
     useEffect(() => {
+        if (error && activeVideoData && activeVideoData.length > 0) {
+            toast.error(`Some videos could not be loaded. Showing ${loadedVideos} loaded videos.`);
+        }
+    }, [error, activeVideoData, loadedVideos]);
+
+    useEffect(() => {
         return () => {
             toast.dismiss(processingToastId);
         };
@@ -236,7 +242,7 @@ export default function PlaylistDetails({
         );
     }
 
-    if (error) {
+    if (error && !activeVideoData) {
         return <ErrorDisplay error={error} errorMsg={errorMsg || ""} id={id} />;
     }
 

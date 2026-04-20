@@ -174,44 +174,51 @@ async function fetchDetailsForIds(videoIds, fetchWithApiKeyFallback) {
   }
 
   const ids = videoIds.join(",");
-  const [contentRes, statsRes] = await Promise.all([
-    fetchWithApiKeyFallback(
-      (key) =>
-        `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,snippet&id=${ids}&key=${key}`
-    ),
-    fetchWithApiKeyFallback(
-      (key) =>
-        `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${ids}&key=${key}`
-    ),
-  ]);
+  
+  try {
+    const [contentRes, statsRes] = await Promise.all([
+      fetchWithApiKeyFallback(
+        (key) =>
+          `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,snippet&id=${ids}&key=${key}`
+      ),
+      fetchWithApiKeyFallback(
+        (key) =>
+          `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${ids}&key=${key}`
+      ),
+    ]);
 
-  if (!contentRes.ok || !statsRes.ok) {
+    if (!contentRes.ok) {
+      console.warn(`Content details fetch failed: ${contentRes.status}`);
+      return [];
+    }
+
+    const contentData = await contentRes.json();
+    const statsData = statsRes.ok ? await statsRes.json() : {};
+
+    const contentItems = Array.isArray(contentData?.items)
+      ? contentData.items
+      : [];
+    const statsItems = Array.isArray(statsData?.items) ? statsData.items : [];
+    const statsMap = new Map(statsItems.map((item) => [item.id, item]));
+
+    return contentItems.map((item) => {
+      const statsItem = statsMap.get(item.id);
+      const duration = item.contentDetails?.duration || null;
+      const seconds = convertToSeconds(duration);
+
+      return {
+        id: item.id,
+        publishedAt: item.snippet?.publishedAt || null,
+        duration: seconds,
+        likes: statsItem?.statistics?.likeCount || null,
+        views: statsItem?.statistics?.viewCount || null,
+        comments: statsItem?.statistics?.commentCount || null,
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching video details:", error);
     return [];
   }
-
-  const contentData = await contentRes.json();
-  const statsData = await statsRes.json();
-
-  const contentItems = Array.isArray(contentData?.items)
-    ? contentData.items
-    : [];
-  const statsItems = Array.isArray(statsData?.items) ? statsData.items : [];
-  const statsMap = new Map(statsItems.map((item) => [item.id, item]));
-
-  return contentItems.map((item) => {
-    const statsItem = statsMap.get(item.id);
-    const duration = item.contentDetails?.duration || null;
-    const seconds = convertToSeconds(duration);
-
-    return {
-      id: item.id,
-      publishedAt: item.snippet?.publishedAt || null,
-      duration: seconds,
-      likes: statsItem?.statistics?.likeCount || null,
-      views: statsItem?.statistics?.viewCount || null,
-      comments: statsItem?.statistics?.commentCount || null,
-    };
-  });
 }
 
 function mergeItemsWithDetails(items, details) {
@@ -233,8 +240,7 @@ function mergeItemsWithDetails(items, details) {
         views: parseInt(detail.views) || null,
         comments: parseInt(detail.comments) || null,
       };
-    })
-    .filter((item) => item.duration !== null);
+    });
 }
 
 async function fetchPlaylistBatch({ id, pageToken, fetchWithApiKeyFallback }) {
@@ -297,59 +303,111 @@ async function fetchAllVideos(id, fetchWithApiKeyFallback) {
 }
 
 export async function GET(request) {
-  // Validate origin
-  if (!validateOrigin(request)) {
-    return Response.json(
-      {
-        status: 403,
-        message: errorMessages[403] || "Forbidden",
-      },
-      { status: 403 }
-    );
-  }
+  try {
+    // Validate origin
+    if (!validateOrigin(request)) {
+      return Response.json(
+        {
+          status: 403,
+          message: errorMessages[403] || "Forbidden",
+        },
+        { status: 403 }
+      );
+    }
 
-  const { searchParams } = new URL(request.url);
-  const id = searchParams.get("id");
-  const mode = searchParams.get("mode") || "full";
-  const pageToken = searchParams.get("pageToken") || "";
-  const start = parseInt(searchParams.get("start")) || 1;
-  const end = parseInt(searchParams.get("end"));
-  const apiKeys = getApiKeys();
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+    const mode = searchParams.get("mode") || "full";
+    const pageToken = searchParams.get("pageToken") || "";
+    const start = parseInt(searchParams.get("start")) || 1;
+    const end = parseInt(searchParams.get("end"));
+    const apiKeys = getApiKeys();
 
-  if (!id) {
-    return Response.json(
-      {
-        status: 400,
-        message: errorMessages[400] || "Missing playlist id",
-      },
-      {
-        status: 400,
-        headers: buildCorsHeaders(request),
+    if (!id) {
+      return Response.json(
+        {
+          status: 400,
+          message: errorMessages[400] || "Missing playlist id",
+        },
+        {
+          status: 400,
+          headers: buildCorsHeaders(request),
+        }
+      );
+    }
+
+    if (!apiKeys.length) {
+      return Response.json(
+        {
+          status: 500,
+          message: "API key not configured",
+        },
+        {
+          status: 500,
+          headers: buildCorsHeaders(request),
+        }
+      );
+    }
+
+    const fetchWithApiKeyFallback = createFetchWithApiKeyFallback(apiKeys);
+
+    if (mode === "playlist") {
+      const metadataResult = await fetchPlaylistMetadata(
+        id,
+        fetchWithApiKeyFallback
+      );
+
+      if (!metadataResult.ok) {
+        return Response.json(
+          {
+            status: metadataResult.status,
+            message:
+              errorMessages[metadataResult.status] ||
+              "Unable to load playlist metadata.",
+          },
+          {
+            status: metadataResult.status,
+            headers: buildCorsHeaders(request),
+          }
+        );
       }
-    );
-  }
 
-  if (!apiKeys.length) {
-    return Response.json(
-      {
-        status: 500,
-        message: "API key not configured",
-      },
-      {
-        status: 500,
+      return Response.json(metadataResult.payload, {
+        status: 200,
         headers: buildCorsHeaders(request),
+      });
+    }
+
+    if (mode === "batch") {
+      const batchResult = await fetchPlaylistBatch({
+        id,
+        pageToken,
+        fetchWithApiKeyFallback,
+      });
+
+      if (!batchResult.ok) {
+        return Response.json(
+          {
+            status: batchResult.status,
+            message: errorMessages[batchResult.status] || "Unexpected error",
+          },
+          {
+            status: batchResult.status,
+            headers: buildCorsHeaders(request),
+          }
+        );
       }
-    );
-  }
 
-  const fetchWithApiKeyFallback = createFetchWithApiKeyFallback(apiKeys);
+      return Response.json(batchResult.payload, {
+        status: 200,
+        headers: buildCorsHeaders(request),
+      });
+    }
 
-  if (mode === "playlist") {
     const metadataResult = await fetchPlaylistMetadata(
       id,
       fetchWithApiKeyFallback
     );
-
     if (!metadataResult.ok) {
       return Response.json(
         {
@@ -365,88 +423,51 @@ export async function GET(request) {
       );
     }
 
-    return Response.json(metadataResult.payload, {
-      status: 200,
-      headers: buildCorsHeaders(request),
-    });
-  }
-
-  if (mode === "batch") {
-    const batchResult = await fetchPlaylistBatch({
-      id,
-      pageToken,
-      fetchWithApiKeyFallback,
-    });
-
-    if (!batchResult.ok) {
+    const allVideosResult = await fetchAllVideos(id, fetchWithApiKeyFallback);
+    if (!allVideosResult.ok) {
       return Response.json(
         {
-          status: batchResult.status,
-          message: errorMessages[batchResult.status] || "Unexpected error",
+          status: allVideosResult.status,
+          message: errorMessages[allVideosResult.status] || "Unexpected error",
         },
         {
-          status: batchResult.status,
+          status: allVideosResult.status,
           headers: buildCorsHeaders(request),
         }
       );
     }
 
-    return Response.json(batchResult.payload, {
-      status: 200,
-      headers: buildCorsHeaders(request),
-    });
-  }
-
-  const metadataResult = await fetchPlaylistMetadata(
-    id,
-    fetchWithApiKeyFallback
-  );
-  if (!metadataResult.ok) {
-    return Response.json(
-      {
-        status: metadataResult.status,
-        message:
-          errorMessages[metadataResult.status] ||
-          "Unable to load playlist metadata.",
-      },
-      {
-        status: metadataResult.status,
-        headers: buildCorsHeaders(request),
-      }
-    );
-  }
-
-  const allVideosResult = await fetchAllVideos(id, fetchWithApiKeyFallback);
-  if (!allVideosResult.ok) {
-    return Response.json(
-      {
-        status: allVideosResult.status,
-        message: errorMessages[allVideosResult.status] || "Unexpected error",
-      },
-      {
-        status: allVideosResult.status,
-        headers: buildCorsHeaders(request),
-      }
-    );
-  }
-
-  let updatedItems = allVideosResult.payload;
-  if (end) {
-    updatedItems = updatedItems.filter(
-      (_item, index) => index >= start - 1 && index <= end - 1
-    );
-  } else if (start > 1) {
-    updatedItems = updatedItems.filter((_item, index) => index >= start - 1);
-  }
-
-  return Response.json(
-    {
-      playlistData: metadataResult.payload.playlistData,
-      videoData: updatedItems,
-    },
-    {
-      status: 200,
-      headers: buildCorsHeaders(request),
+    let updatedItems = allVideosResult.payload;
+    if (end) {
+      updatedItems = updatedItems.filter(
+        (_item, index) => index >= start - 1 && index <= end - 1
+      );
+    } else if (start > 1) {
+      updatedItems = updatedItems.filter((_item, index) => index >= start - 1);
     }
-  );
+
+    return Response.json(
+      {
+        playlistData: metadataResult.payload.playlistData,
+        videoData: updatedItems,
+      },
+      {
+        status: 200,
+        headers: buildCorsHeaders(request),
+      }
+    );
+  } catch (error) {
+    console.error("Unexpected error in details API:", error);
+    return Response.json(
+      {
+        status: 500,
+        message: "Internal server error. Please try again later.",
+      },
+      {
+        status: 500,
+        headers: buildCorsHeaders(new Request(request, { method: "GET" })),
+      }
+    );
+  }
+}
 }
