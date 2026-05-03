@@ -16,7 +16,7 @@ const Recent = () => {
     );
     recentPlaylists.length = settings.recentPlaylistNumber; // Limit to the number specified in settings
     setRecent(recentPlaylists);
-  }, []);
+  }, [settings.recentPlaylistNumber]);
   function handleDelete(id: string) {
     const updatedRecent = recent?.filter((playlist) => playlist.id !== id);
     setRecent(updatedRecent);
