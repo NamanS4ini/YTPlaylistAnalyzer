@@ -139,3 +139,65 @@ export function slicePlaylistVideos(
 
   return videoData;
 }
+
+export function deletePlaylistCache(id: string) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  localStorage.removeItem(getPlaylistCacheKey(id));
+}
+
+export function getAllCachedPlaylistIds() {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  const ids: string[] = [];
+
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+
+    if (key?.startsWith(PLAYLIST_CACHE_PREFIX)) {
+      const id = key.substring(PLAYLIST_CACHE_PREFIX.length);
+      ids.push(id);
+    }
+  }
+
+  return ids;
+}
+
+export function cleanupExpiredCache(maxAgeHours: number) {
+  if (typeof window === "undefined") {
+    return 0;
+  }
+
+  const cachedIds = getAllCachedPlaylistIds();
+  let deletedCount = 0;
+
+  for (const id of cachedIds) {
+    try {
+      const stored = localStorage.getItem(getPlaylistCacheKey(id));
+
+      if (!stored) {
+        continue;
+      }
+
+      const parsed = JSON.parse(stored) as Partial<PlaylistCacheEntry>;
+      const cachedAt =
+        typeof parsed.cachedAt === "string" ? parsed.cachedAt : "";
+      const ageHours = getPlaylistCacheAgeHours(cachedAt);
+
+      if (!Number.isFinite(ageHours) || ageHours >= maxAgeHours) {
+        deletePlaylistCache(id);
+        deletedCount++;
+      }
+    } catch {
+      // If parsing fails, delete the corrupted entry
+      deletePlaylistCache(id);
+      deletedCount++;
+    }
+  }
+
+  return deletedCount;
+}
