@@ -1,6 +1,6 @@
 {
   "name": "yt-playlist-length",
-  "version": "2.0.0 Beta",
+  "version": "2.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
