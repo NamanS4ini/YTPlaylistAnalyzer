@@ -27,6 +27,7 @@ YouTube Playlist Analyzer is a Next.js app for inspecting public playlists, sign
 - Change how many recent playlists appear on the home page.
 - Show or hide home page sections such as Recent Playlists, Need Help, and the footer.
 - Adjust cache expiration from the settings page.
+- Automatically clean up expired playlist cache in the background using the current cache expiration setting.
 - Control navbar visibility and style from the settings page.
 - Keep navigation choices persistent in local storage.
 
@@ -42,6 +43,7 @@ YouTube Playlist Analyzer is a Next.js app for inspecting public playlists, sign
 
 - Save playlists locally for quick access later.
 - Automatically track recent playlists.
+- Delete expired cached playlists automatically so local storage stays tidy.
 - Store user preferences in browser local storage.
 - Keep playlist analysis responsive by separating full data from displayed data.
 
@@ -155,6 +157,7 @@ npm start
 The app is designed to keep user data local whenever possible.
 
 - Bookmarks, preferences, and cache settings are stored in the browser.
+- Expired playlist cache entries are removed automatically based on the configured cache expiration.
 - No application database is used for playlist data.
 - API calls are limited to the data needed for analysis.
 - Authentication is handled through NextAuth sessions.
