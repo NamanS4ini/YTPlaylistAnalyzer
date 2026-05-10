@@ -66,6 +66,26 @@ export default function DisplaySettings({
                     </SelectContent>
                 </Select>
             </div>
+
+            <div className="space-y-3 mt-4">
+                <Label className="text-base font-medium text-white">Load Screen Mode</Label>
+                <p className="text-sm text-zinc-400 mb-3">Choose how playlist loading is presented</p>
+                <Select
+                    value={settings.loadScreenMode ?? "default"}
+                    onValueChange={(value) =>
+                        updateSettings({ loadScreenMode: value as "default" | "instant" | "spinner" })
+                    }
+                >
+                    <SelectTrigger className="w-full bg-zinc-900 border-zinc-800 text-white">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                        <SelectItem value="default" className="text-white focus:bg-zinc-800 focus:text-white">Default (Skeleton)</SelectItem>
+                        <SelectItem value="instant" className="text-white focus:bg-zinc-800 focus:text-white">Instant</SelectItem>
+                        <SelectItem value="spinner" className="text-white focus:bg-zinc-800 focus:text-white">Spinner</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
         </div>
     );
 }

@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
 
   description:
-    "Analyze YouTube playlists and calculate total duration, average video length, and playlist statistics.",
+    "Analyze YouTube playlists and calculate total duration, average video length, and playlist statistics. Get YouTube playlist length, video count, and more.",
 
   authors: [{ name: "Naman Saini" }],
   creator: "Naman Saini",

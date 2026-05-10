@@ -230,14 +230,53 @@ export default function PlaylistDetails({
     }, [processingToastId]);
 
     const shouldShowSkeleton =
-        loading &&
-        error === null &&
-        (activeVideoData === null || (isProgressiveLoading && loadedVideos === 0));
+        (() => {
+            const mode = settings.loadScreenMode ?? "instant";
+
+            if (mode === "default") {
+                // Keep skeleton visible until full load completes
+                return loading && error === null;
+            }
+
+            if (mode === "spinner") {
+                // Spinner mode will be handled separately
+                return false;
+            }
+
+            // instant (default behavior) - show skeleton only if no data yet
+            return (
+                loading &&
+                error === null &&
+                (activeVideoData === null || (isProgressiveLoading && loadedVideos === 0))
+            );
+        })();
+
+    const shouldShowSpinner = (() => {
+        const mode = settings.loadScreenMode ?? "instant";
+        if (mode !== "spinner") return false;
+        return loading && error === null;
+    })();
 
     if (shouldShowSkeleton) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 text-white px-4">
                 <DetailsSkeleton />
+            </div>
+        );
+    }
+
+    if (shouldShowSpinner) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 text-white px-4">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="p-6 rounded-full bg-zinc-900 border border-zinc-800">
+                        <svg className="animate-spin h-8 w-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" strokeWidth="4"></circle>
+                            <path className="opacity-75" d="M4 12a8 8 0 018-8v8z" strokeWidth="4"></path>
+                        </svg>
+                    </div>
+                    <p className="text-zinc-400">Loading playlist…</p>
+                </div>
             </div>
         );
     }

@@ -72,6 +72,7 @@ type UploadedVideoData = {
 type Settings = {
   thumbnail: boolean;
   cacheExpireTime: number;
+  loadScreenMode?: "default" | "instant" | "spinner";
   recentPlaylistNumber: number;
   showRecentPlaylists: boolean;
   showNeedHelp: boolean;

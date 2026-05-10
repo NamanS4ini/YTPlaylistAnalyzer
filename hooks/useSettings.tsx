@@ -15,6 +15,7 @@ const DEFAULT_CACHE_EXPIRY_HOURS = 48;
 const DEFAULT_SETTINGS: Settings = {
     thumbnail: true,
     cacheExpireTime: DEFAULT_CACHE_EXPIRY_HOURS,
+    loadScreenMode: "default",
     recentPlaylistNumber: 5,
     showRecentPlaylists: true,
     showNeedHelp: true,
@@ -58,6 +59,7 @@ function getSettings(): Settings {
             ...DEFAULT_SETTINGS,
             ...parsed,
             cacheExpireTime: normalizeCacheExpireTime(parsed.cacheExpireTime),
+            loadScreenMode: parsed.loadScreenMode ?? DEFAULT_SETTINGS.loadScreenMode,
             showRecentPlaylists: parsed.showRecentPlaylists ?? DEFAULT_SETTINGS.showRecentPlaylists,
             showNeedHelp: parsed.showNeedHelp ?? DEFAULT_SETTINGS.showNeedHelp,
             showFooter: parsed.showFooter ?? DEFAULT_SETTINGS.showFooter,
