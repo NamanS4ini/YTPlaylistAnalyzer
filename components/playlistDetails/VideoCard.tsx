@@ -13,12 +13,23 @@ interface VideoCardProps {
     item: VideoData;
     playlistId: string | null | undefined;
     thumbnail: boolean;
+    selected: boolean;
+    onToggleSelected: (videoId: string, selected: boolean) => void;
     convertToHrs: (seconds: number) => string;
     convertDate: (dateString: string) => string;
     wsrvLoader: (props: ImageLoaderProps) => string;
 }
 
-export default function VideoCard({ item, playlistId, thumbnail, convertToHrs, convertDate, wsrvLoader }: VideoCardProps) {
+export default function VideoCard({
+    item,
+    playlistId,
+    thumbnail,
+    selected,
+    onToggleSelected,
+    convertToHrs,
+    convertDate,
+    wsrvLoader,
+}: VideoCardProps) {
     const { settings } = useSettings();
     const videoStats = settings.videoStats;
 
@@ -34,12 +45,27 @@ export default function VideoCard({ item, playlistId, thumbnail, convertToHrs, c
 
 
     return (
-        <div className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-700/50 rounded-xl overflow-hidden shadow-xl hover:shadow-2xl hover:shadow-zinc-700/20 transition-all duration-300 hover:border-zinc-600/50 group">
+        <div
+            className={`relative bg-zinc-950 hover:bg-zinc-900 border rounded-xl overflow-hidden shadow-xl hover:shadow-2xl hover:shadow-zinc-700/20 transition-all duration-300 group ${
+                selected ? "border-blue-500/70 ring-1 ring-blue-500/20" : "border-zinc-700/50 hover:border-zinc-600/50"
+            }`}
+        >
+            <label className="absolute right-3 top-3 z-20 flex items-center gap-2 rounded-md border border-zinc-700/80 bg-zinc-950/90 px-2 py-1 text-xs font-medium text-zinc-200 backdrop-blur-sm shadow-lg cursor-pointer">
+                <input
+                    type="checkbox"
+                    checked={selected}
+                    onChange={(event) => onToggleSelected(item.id, event.target.checked)}
+                    aria-label={`Select ${item.title}`}
+                    className="h-4 w-4 rounded border-zinc-600 bg-zinc-900 text-blue-500 focus:ring-blue-500/50"
+                />
+                <span className="hidden sm:inline">Select</span>
+            </label>
+
             <a
                 href={`https://www.youtube.com/watch?v=${item.id}&list=${playlistId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block"
+                className="block h-full"
             >
                 {/* Thumbnail Section */}
                 <div className="relative overflow-hidden">

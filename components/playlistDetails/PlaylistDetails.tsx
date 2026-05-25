@@ -2,7 +2,7 @@
 
 import { BookmarkIcon, Clock3, RefreshCw } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ImageLoaderProps } from "next/image";
 import type { VideoData, PlaylistCard } from "@/lib/types";
 import DetailsSkeleton from "./DetailsSkeleton";
@@ -10,6 +10,7 @@ import StatisticsCards from "./StatisticsCards";
 import VideoCard from "./VideoCard";
 import SortControls from "./SortControls";
 import PlaylistRangeControls from "./PlaylistRangeControls";
+import PlaylistSelectionControls from "./PlaylistSelectionControls";
 import ErrorDisplay from "./ErrorDisplay";
 import {
     Pagination,
@@ -31,6 +32,17 @@ import { usePlaylistDetailsData } from "@/hooks/usePlaylistDetailsData";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
+const sortFunctions: Record<string, (a: VideoData, b: VideoData) => number> = {
+    position: (a, b) => a.position - b.position,
+    title: (a, b) => a.title.localeCompare(b.title),
+    newest: (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
+    oldest: (a, b) => new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime(),
+    views: (a, b) => (b.views || 0) - (a.views || 0),
+    likes: (a, b) => (b.likes || 0) - (a.likes || 0),
+    comments: (a, b) => (b.comments || 0) - (a.comments || 0),
+    duration: (a, b) => Number(b.duration || 0) - Number(a.duration || 0),
+};
+
 export default function PlaylistDetails({
     id,
     start,
@@ -45,11 +57,13 @@ export default function PlaylistDetails({
     const { settings } = useSettings();
     const thumbnail = settings.thumbnail;
 
-    const [Reversed, setReversed] = useState<boolean>(false);
+    const [isReversed, setIsReversed] = useState<boolean>(false);
+    const [sortBy, setSortBy] = useState<string>("position");
     const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
     const [speed, setSpeed] = useState<string>("1");
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const [displayVideoData, setDisplayVideoData] = useState<VideoData[] | null>(null);
+    const [rangeVideoData, setRangeVideoData] = useState<VideoData[] | null>(null);
+    const [excludedVideoIds, setExcludedVideoIds] = useState<Set<string>>(new Set());
     const videosPerPage = 30;
 
     const {
@@ -72,8 +86,26 @@ export default function PlaylistDetails({
         start: normalizedStart,
         end: normalizedEnd,
     });
-    const activeVideoData = displayVideoData ?? fullVideoData ?? videoData;
+    const rangeBaseVideoData = rangeVideoData ?? videoData;
+    const visibleVideoData = useMemo<VideoData[]>(() => {
+        if (!rangeBaseVideoData) {
+            return [];
+        }
+
+        const sortFunction = sortFunctions[sortBy] ?? sortFunctions.position;
+        const sortedVideos = [...rangeBaseVideoData].sort(sortFunction);
+
+        return isReversed ? sortedVideos.reverse() : sortedVideos;
+    }, [isReversed, rangeBaseVideoData, sortBy]);
+    const selectedVideoData = useMemo(
+        () => visibleVideoData.filter((item) => !excludedVideoIds.has(item.id)),
+        [excludedVideoIds, visibleVideoData]
+    );
     const playlistLength = totalVideos ?? 0;
+    const visibleVideoCount = visibleVideoData.length;
+    const selectedVideoCount = selectedVideoData.length;
+    const totalPages = Math.max(1, Math.ceil(visibleVideoData.length / videosPerPage));
+    const displayPage = Math.min(currentPage, totalPages);
     const processingToastId = "playlist-processing";
 
     const wsrvLoader = ({ src, width, quality }: ImageLoaderProps) => {
@@ -88,38 +120,65 @@ export default function PlaylistDetails({
         return hours > 0 ? `${hours}h ${minutes}m ${secs}s` : `${minutes}m ${secs}s`;
     }
 
-    function handelSort(e: React.ChangeEvent<HTMLSelectElement>) {
-        if (!activeVideoData) return;
-
-        const sortFunctions: Record<string, (a: VideoData, b: VideoData) => number> = {
-            position: (a, b) => a.position - b.position,
-            title: (a, b) => a.title.localeCompare(b.title),
-            newest: (a, b) =>
-                new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
-            oldest: (a, b) =>
-                new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime(),
-            views: (a, b) => (b.views || 0) - (a.views || 0),
-            likes: (a, b) => (b.likes || 0) - (a.likes || 0),
-            comments: (a, b) => (b.comments || 0) - (a.comments || 0),
-            duration: (a, b) => Number(b.duration || 0) - Number(a.duration || 0),
-        };
-
-        setReversed(false);
+    function handleSort(e: React.ChangeEvent<HTMLSelectElement>) {
+        setSortBy(e.target.value);
+        setIsReversed(false);
         setCurrentPage(1);
-
-        const sortFunction = sortFunctions[e.target.value];
-
-        if (sortFunction) {
-            setDisplayVideoData([...activeVideoData].sort(sortFunction));
-        }
     }
 
-    function handelReverse() {
-        if (!activeVideoData) return;
-
-        setDisplayVideoData([...activeVideoData].reverse());
-        setReversed(!Reversed);
+    function handleReverse() {
+        setIsReversed((prev) => !prev);
         setCurrentPage(1);
+    }
+
+    function handleToggleVideoSelection(videoId: string, selected: boolean) {
+        setExcludedVideoIds((current) => {
+            const next = new Set(current);
+
+            if (selected) {
+                next.delete(videoId);
+            } else {
+                next.add(videoId);
+            }
+
+            return next;
+        });
+    }
+
+    function handleToggleVisibleRangeSelection(selected: boolean) {
+        const videos = visibleVideoData;
+
+        setExcludedVideoIds((current) => {
+            const next = new Set(current);
+
+            for (const video of videos) {
+                if (selected) {
+                    next.delete(video.id);
+                } else {
+                    next.add(video.id);
+                }
+            }
+
+            return next;
+        });
+    }
+
+    function handleInvertSelection() {
+        const videos = visibleVideoData;
+
+        setExcludedVideoIds((current) => {
+            const next = new Set(current);
+
+            for (const video of videos) {
+                if (next.has(video.id)) {
+                    next.delete(video.id);
+                } else {
+                    next.add(video.id);
+                }
+            }
+
+            return next;
+        });
     }
 
     function handleBookmark() {
@@ -160,7 +219,7 @@ export default function PlaylistDetails({
     }, [id]);
 
     useEffect(() => {
-        if (!playlistData || !activeVideoData) return;
+        if (!playlistData) return;
 
         document.title = playlistData.title;
 
@@ -171,7 +230,7 @@ export default function PlaylistDetails({
             channelTitle: playlistData.channelTitle,
             channelId: playlistData.channelId || "",
             totalDuration: convertToHrs(
-                activeVideoData.reduce(
+                visibleVideoData.reduce(
                     (accumulator, item) => accumulator + (item.duration ? Number(item.duration) : 0),
                     0
                 )
@@ -185,20 +244,11 @@ export default function PlaylistDetails({
 
         filteredPlaylists.unshift(currentPlaylist);
         localStorage.setItem("recentPlaylists", JSON.stringify(filteredPlaylists.slice(0, 10)));
-    }, [playlistData, activeVideoData]);
-
-    useEffect(() => {
-        if (!fullVideoData) {
-            setDisplayVideoData(null);
-            return;
-        }
-
-        setDisplayVideoData(fullVideoData);
-    }, [fullVideoData]);
+    }, [playlistData, visibleVideoData]);
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [displayVideoData]);
+    }, [visibleVideoData]);
 
     useEffect(() => {
         if (!isProgressiveLoading) {
@@ -218,10 +268,10 @@ export default function PlaylistDetails({
     }, [isProgressiveLoading, loadedVideos, remainingVideos]);
 
     useEffect(() => {
-        if (error && activeVideoData && activeVideoData.length > 0) {
+        if (error && visibleVideoData.length > 0) {
             toast.error(`Some videos could not be loaded. Showing ${loadedVideos} loaded videos.`);
         }
-    }, [error, activeVideoData, loadedVideos]);
+    }, [error, loadedVideos, visibleVideoData.length]);
 
     useEffect(() => {
         return () => {
@@ -247,7 +297,7 @@ export default function PlaylistDetails({
             return (
                 loading &&
                 error === null &&
-                (activeVideoData === null || (isProgressiveLoading && loadedVideos === 0))
+                (rangeBaseVideoData === null || (isProgressiveLoading && loadedVideos === 0))
             );
         })();
 
@@ -281,189 +331,196 @@ export default function PlaylistDetails({
         );
     }
 
-    if (error && !activeVideoData) {
+    if (error && visibleVideoData.length === 0) {
         return <ErrorDisplay error={error} errorMsg={errorMsg || ""} id={id} />;
     }
 
-    if (activeVideoData) {
-        return (
-            <div className="min-h-screen flex flex-col pt-16 items-center bg-zinc-950 text-white px-4">
-                <div className="w-full max-w-6xl mx-auto">
-                    <div className="flex items-center justify-between md:flex-row flex-col gap-4 py-5">
-                        <div className="flex items-center justify-center gap-3 flex-wrap">
-                            <h1 className="text-xl md:text-4xl text-center font-bold">
-                                {id === "uploaded" ? (
-                                    playlistData?.title
-                                ) : (
-                                    <a
-                                        className="hover:underline"
-                                        href={`https://www.youtube.com/playlist?list=${playlistData?.id}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
+    return (
+        <div className="min-h-screen flex flex-col pt-16 items-center bg-zinc-950 text-white px-4">
+            <div className="w-full max-w-6xl mx-auto">
+                <div className="flex items-center justify-between md:flex-row flex-col gap-4 py-5">
+                    <div className="flex items-center justify-center gap-3 flex-wrap">
+                        <h1 className="text-xl md:text-4xl text-center font-bold">
+                            {id === "uploaded" ? (
+                                playlistData?.title
+                            ) : (
+                                <a
+                                    className="hover:underline"
+                                    href={`https://www.youtube.com/playlist?list=${playlistData?.id}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    {playlistData?.title}
+                                </a>
+                            )}
+                        </h1>
+
+                        {isUsingCache && (
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Badge
+                                        variant="secondary"
+                                        className="cursor-default border-blue-500/40 bg-blue-500/10 text-blue-200"
                                     >
-                                        {playlistData?.title}
-                                    </a>
-                                )}
-                            </h1>
+                                        <Clock3 className="h-10 w-10" />
+                                        Cached
+                                    </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    Loaded from local cache{cacheAgeLabel ? ` (${cacheAgeLabel})` : ""}. Refreshes after {Math.max(24, settings.cacheExpireTime)} hours.
+                                </TooltipContent>
+                            </Tooltip>
+                        )}
 
-                            {isUsingCache && (
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Badge
-                                            variant="secondary"
-                                            className="cursor-default border-blue-500/40 bg-blue-500/10 text-blue-200"
-                                        >
-                                            <Clock3 className="h-10 w-10" />
-                                            Cached
-                                        </Badge>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        Loaded from local cache{cacheAgeLabel ? ` (${cacheAgeLabel})` : ""}. Refreshes after {Math.max(24, settings.cacheExpireTime)} hours.
-                                    </TooltipContent>
-                                </Tooltip>
-                            )}
-
-                            {id !== "uploaded" && isUsingCache && (
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={refreshPlaylistData}
-                                    disabled={isRefreshing}
-                                    className="dark cursor-pointer"
-                                >
-                                    <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
-                                    {isRefreshing ? "Refreshing" : "Refresh"}
-                                </Button>
-                            )}
-                        </div>
-
-                        {id !== "uploaded" && (
-                            <div className="flex items-center gap-2">
-                                <Toggle
-                                    onClick={handleBookmark}
-                                    size="lg"
-                                    variant="outline"
-                                    className="dark text-lg cursor-pointer"
-                                >
-                                    <BookmarkIcon fill={isBookmarked ? "white" : "black"} />
-                                    <p className="text-sm md:text-base">
-                                        {isBookmarked ? " Bookmarked" : " Bookmark"}
-                                    </p>
-                                </Toggle>
-                            </div>
+                        {id !== "uploaded" && isUsingCache && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={refreshPlaylistData}
+                                disabled={isRefreshing}
+                                className="dark cursor-pointer"
+                            >
+                                <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+                                {isRefreshing ? "Refreshing" : "Refresh"}
+                            </Button>
                         )}
                     </div>
 
-                    <StatisticsCards
-                        videoData={activeVideoData}
-                        speed={speed}
-                        setSpeed={setSpeed}
-                        convertToHrs={convertToHrs}
-                    />
-                </div>
-
-                <div>
-                    <SortControls
-                        handelSort={handelSort}
-                        handelReverse={handelReverse}
-                        Reversed={Reversed}
-                    />
-
-                    <PlaylistRangeControls
-                        videoData={fullVideoData}
-                        playlistLength={playlistLength}
-                        initialStart={Number.parseInt(normalizedStart, 10) || 1}
-                        initialEnd={Number.parseInt(normalizedEnd, 10) || playlistLength}
-                        disabled={loading}
-                        onFilteredVideosChange={setDisplayVideoData}
-                    />
-
-                    <div className="flex justify-center items-center gap-2 text-sm text-zinc-400 mt-4">
-                        <span>
-                            Showing {Math.min((currentPage - 1) * videosPerPage + 1, activeVideoData.length)}-
-                            {Math.min(currentPage * videosPerPage, activeVideoData.length)} of {activeVideoData.length} videos
-                        </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5 max-w-6xl w-full mx-auto">
-                        {activeVideoData
-                            .slice((currentPage - 1) * videosPerPage, currentPage * videosPerPage)
-                            .map((item) => (
-                                <VideoCard
-                                    key={`${item.id}${item.position}`}
-                                    item={item}
-                                    playlistId={playlistData?.id}
-                                    thumbnail={thumbnail}
-                                    convertToHrs={convertToHrs}
-                                    convertDate={convertDate}
-                                    wsrvLoader={wsrvLoader}
-                                />
-                            ))}
-                    </div>
-
-                    {activeVideoData.length > videosPerPage && (
-                        <div className="flex justify-center mt-8 mb-28">
-                            <Pagination className="dark">
-                                <PaginationContent>
-                                    <PaginationItem>
-                                        <PaginationPrevious
-                                            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                                            className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                                        />
-                                    </PaginationItem>
-
-                                    {Array.from({ length: Math.ceil(activeVideoData.length / videosPerPage) }, (_, index) => {
-                                        const pageNumber = index + 1;
-
-                                        if (
-                                            pageNumber === 1 ||
-                                            pageNumber === Math.ceil(activeVideoData.length / videosPerPage) ||
-                                            Math.abs(pageNumber - currentPage) <= 1
-                                        ) {
-                                            return (
-                                                <PaginationItem key={pageNumber}>
-                                                    <PaginationLink
-                                                        onClick={() => setCurrentPage(pageNumber)}
-                                                        isActive={currentPage === pageNumber}
-                                                        className="cursor-pointer"
-                                                    >
-                                                        {pageNumber}
-                                                    </PaginationLink>
-                                                </PaginationItem>
-                                            );
-                                        }
-
-                                        if (Math.abs(pageNumber - currentPage) === 2) {
-                                            return (
-                                                <PaginationItem key={pageNumber}>
-                                                    <PaginationEllipsis />
-                                                </PaginationItem>
-                                            );
-                                        }
-
-                                        return null;
-                                    })}
-
-                                    <PaginationItem>
-                                        <PaginationNext
-                                            onClick={() =>
-                                                setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(activeVideoData.length / videosPerPage)))
-                                            }
-                                            className={
-                                                currentPage === Math.ceil(activeVideoData.length / videosPerPage)
-                                                    ? "pointer-events-none opacity-50"
-                                                    : "cursor-pointer"
-                                            }
-                                        />
-                                    </PaginationItem>
-                                </PaginationContent>
-                            </Pagination>
+                    {id !== "uploaded" && (
+                        <div className="flex items-center gap-2">
+                            <Toggle
+                                onClick={handleBookmark}
+                                size="lg"
+                                variant="outline"
+                                className="dark text-lg cursor-pointer"
+                            >
+                                <BookmarkIcon fill={isBookmarked ? "white" : "black"} />
+                                <p className="text-sm md:text-base">
+                                    {isBookmarked ? " Bookmarked" : " Bookmark"}
+                                </p>
+                            </Toggle>
                         </div>
                     )}
                 </div>
-            </div>
-        );
-    }
 
-    return null;
+                <StatisticsCards
+                    videoData={selectedVideoData}
+                    speed={speed}
+                    setSpeed={setSpeed}
+                    convertToHrs={convertToHrs}
+                />
+            </div>
+
+            <div>
+                <SortControls
+                    handelSort={handleSort}
+                    handelReverse={handleReverse}
+                    Reversed={isReversed}
+                />
+
+                <PlaylistRangeControls
+                    videoData={fullVideoData}
+                    playlistLength={playlistLength}
+                    initialStart={Number.parseInt(normalizedStart, 10) || 1}
+                    initialEnd={Number.parseInt(normalizedEnd, 10) || playlistLength}
+                    disabled={loading}
+                    onFilteredVideosChange={setRangeVideoData}
+                />
+
+                <PlaylistSelectionControls
+                    visibleCount={visibleVideoCount}
+                    selectedCount={selectedVideoCount}
+                    disabled={loading || visibleVideoCount === 0}
+                    onToggleAll={handleToggleVisibleRangeSelection}
+                    onInvertSelection={handleInvertSelection}
+                />
+
+                <div className="flex justify-center items-center gap-2 text-sm text-zinc-400 mt-4">
+                    <span>
+                        Showing{" "}
+                        {Math.min((displayPage - 1) * videosPerPage + 1, visibleVideoData.length)}-
+                        {Math.min(displayPage * videosPerPage, visibleVideoData.length)} of {visibleVideoData.length} videos
+                    </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5 max-w-6xl w-full mx-auto">
+                    {visibleVideoData
+                        .slice((displayPage - 1) * videosPerPage, displayPage * videosPerPage)
+                        .map((item) => (
+                            <VideoCard
+                                key={item.id}
+                                item={item}
+                                playlistId={playlistData?.id}
+                                thumbnail={thumbnail}
+                                selected={!excludedVideoIds.has(item.id)}
+                                onToggleSelected={handleToggleVideoSelection}
+                                convertToHrs={convertToHrs}
+                                convertDate={convertDate}
+                                wsrvLoader={wsrvLoader}
+                            />
+                        ))}
+                </div>
+
+                {visibleVideoData.length > videosPerPage && (
+                    <div className="flex justify-center mt-8 mb-28">
+                        <Pagination className="dark">
+                            <PaginationContent>
+                                <PaginationItem>
+                                    <PaginationPrevious
+                                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                        className={displayPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                    />
+                                </PaginationItem>
+
+                                {Array.from({ length: totalPages }, (_, index) => {
+                                    const pageNumber = index + 1;
+
+                                    if (
+                                        pageNumber === 1 ||
+                                        pageNumber === totalPages ||
+                                        Math.abs(pageNumber - displayPage) <= 1
+                                    ) {
+                                        return (
+                                            <PaginationItem key={pageNumber}>
+                                                <PaginationLink
+                                                    onClick={() => setCurrentPage(pageNumber)}
+                                                    isActive={displayPage === pageNumber}
+                                                    className="cursor-pointer"
+                                                >
+                                                    {pageNumber}
+                                                </PaginationLink>
+                                            </PaginationItem>
+                                        );
+                                    }
+
+                                    if (Math.abs(pageNumber - displayPage) === 2) {
+                                        return (
+                                            <PaginationItem key={pageNumber}>
+                                                <PaginationEllipsis />
+                                            </PaginationItem>
+                                        );
+                                    }
+
+                                    return null;
+                                })}
+
+                                <PaginationItem>
+                                    <PaginationNext
+                                        onClick={() =>
+                                            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                                        }
+                                        className={
+                                            displayPage === totalPages
+                                                ? "pointer-events-none opacity-50"
+                                                : "cursor-pointer"
+                                        }
+                                    />
+                                </PaginationItem>
+                            </PaginationContent>
+                        </Pagination>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
 }

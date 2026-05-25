@@ -8,6 +8,13 @@ interface StatisticsCardsProps {
 }
 
 export default function StatisticsCards({ videoData, speed, setSpeed, convertToHrs }: StatisticsCardsProps) {
+    const totalDuration = videoData.reduce(
+        (acc, item) => acc + (item.duration ? Number(item.duration) : 0),
+        0
+    );
+    const averageDuration = videoData.length > 0 ? Math.round(totalDuration / videoData.length) : 0;
+    const playbackDurations = [1.25, 1.5, 1.75, 2.0];
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5 max-w-6xl w-full mx-auto">
             {/* Total Statistics Card */}
@@ -31,28 +38,14 @@ export default function StatisticsCards({ videoData, speed, setSpeed, convertToH
                     <div className="group">
                         <p className="text-sm text-zinc-400 mb-1">Total Duration</p>
                         <p className="text-2xl font-bold text-zinc-100">
-                            {convertToHrs(
-                                videoData.reduce(
-                                    (acc, item) =>
-                                        acc + (item.duration ? Number(item.duration) : 0),
-                                    0
-                                )
-                            )}
+                            {convertToHrs(totalDuration)}
                         </p>
                     </div>
                     <div className="h-px"></div>
                     <div className="group">
                         <p className="text-sm text-zinc-400 mb-1">Average Duration</p>
                         <p className="text-2xl font-bold text-zinc-100">
-                            {convertToHrs(
-                                Math.round(
-                                    videoData.reduce(
-                                        (acc, item) =>
-                                            acc + (item.duration ? Number(item.duration) : 0),
-                                        0
-                                    ) / videoData.length
-                                )
-                            )}
+                            {convertToHrs(averageDuration)}
                         </p>
                     </div>
                 </div>
@@ -112,57 +105,25 @@ export default function StatisticsCards({ videoData, speed, setSpeed, convertToH
                     <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 transition-colors">
                         <span className="text-sm font-medium text-zinc-300">1.25x</span>
                         <span className="text-sm font-bold text-zinc-100">
-                            {convertToHrs(
-                                Math.round(
-                                    videoData.reduce(
-                                        (acc, item) =>
-                                            acc + (item.duration ? Number(item.duration) : 0),
-                                        0
-                                    ) / 1.25
-                                )
-                            )}
+                            {convertToHrs(Math.round(totalDuration / playbackDurations[0]))}
                         </span>
                     </div>
                     <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 transition-colors">
                         <span className="text-sm font-medium text-zinc-300">1.50x</span>
                         <span className="text-sm font-bold text-zinc-100">
-                            {convertToHrs(
-                                Math.round(
-                                    videoData.reduce(
-                                        (acc, item) =>
-                                            acc + (item.duration ? Number(item.duration) : 0),
-                                        0
-                                    ) / 1.5
-                                )
-                            )}
+                            {convertToHrs(Math.round(totalDuration / playbackDurations[1]))}
                         </span>
                     </div>
                     <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 transition-colors">
                         <span className="text-sm font-medium text-zinc-300">1.75x</span>
                         <span className="text-sm font-bold text-zinc-100">
-                            {convertToHrs(
-                                Math.round(
-                                    videoData.reduce(
-                                        (acc, item) =>
-                                            acc + (item.duration ? Number(item.duration) : 0),
-                                        0
-                                    ) / 1.75
-                                )
-                            )}
+                            {convertToHrs(Math.round(totalDuration / playbackDurations[2]))}
                         </span>
                     </div>
                     <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 transition-colors">
                         <span className="text-sm font-medium text-zinc-300">2.00x</span>
                         <span className="text-sm font-bold text-zinc-100">
-                            {convertToHrs(
-                                Math.round(
-                                    videoData.reduce(
-                                        (acc, item) =>
-                                            acc + (item.duration ? Number(item.duration) : 0),
-                                        0
-                                    ) / 2.0
-                                )
-                            )}
+                            {convertToHrs(Math.round(totalDuration / playbackDurations[3]))}
                         </span>
                     </div>
                     <div className="pt-2 border-t border-zinc-700/50">
@@ -180,11 +141,7 @@ export default function StatisticsCards({ videoData, speed, setSpeed, convertToH
                             <span className="text-sm font-bold text-zinc-100 min-w-[80px] text-right">
                                 {convertToHrs(
                                     Math.round(
-                                        videoData.reduce(
-                                            (acc, item) =>
-                                                acc + (item.duration ? Number(item.duration) : 0),
-                                            0
-                                        ) / (parseFloat(speed) || 1)
+                                        totalDuration / (parseFloat(speed) || 1)
                                     )
                                 )}
                             </span>
