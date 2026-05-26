@@ -23,8 +23,8 @@ const Announcement = () => {
       enabled: true,
     }, 
     {
-      id: 1026,
-      message: "Settings are now available for customization!\nClick the settings icon in the top right corner to access them.",
+      id: 1033,
+      message: "New feature: You can now select/deselect videos in the playlist while analyzing!",
       enabled: true,
     },
   ];
