@@ -11,13 +11,14 @@ YouTube Playlist Analyzer is a Next.js app for inspecting public playlists, sign
 - Slice the displayed playlist with a draggable range control and Start/End inputs.
 - Select or deselect individual videos with per-card checkboxes.
 - Toggle the whole visible range with a master selection checkbox.
+- Invert selection for the current range with one click.
 - Use the full playlist length as the range boundary instead of a fixed cap.
 - Filter locally without refetching every time the range changes.
 - Keep the browser URL in sync with the current range without causing a reload.
 
 ### 📈 Statistics and Metrics
 
-- See aggregate views, likes, comments, and duration summaries.
+- See aggregate views, likes, comments, and duration summaries for the selected videos.
 - Inspect per-video details with hoverable values and clean cards.
 - Sort by position, views, likes, duration, comments, or publish date.
 - Reverse sort order with one click.
@@ -135,9 +136,9 @@ npm start
 1. Paste a YouTube playlist URL.
 2. Load the playlist and review the summary.
 3. Narrow the visible range using the slider or the Start and End fields.
-4. Select or exclude individual videos with the checkboxes.
+4. Select or exclude individual videos with the checkboxes, or invert the current range selection.
 5. Sort the videos as needed.
-6. Review the playlist cards, statistics, and playback estimates.
+6. Review the playlist cards, statistics, and playback estimates. Deselected videos stay visible, but they are excluded from stats.
 7. Save the playlist if you want quick access later.
 
 ### Liked Videos
