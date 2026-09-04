@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { X, HeartHandshake, Coffee } from "lucide-react";
 import { useFundingBanner } from "@/contexts/FundingBannerContext";
+import Link from "next/link";
 
 const BANNER_STORAGE_KEY = "fundingBannerDismissed";
 const VISIT_COUNT_KEY = "ytpla_visit_count";
@@ -58,7 +59,7 @@ const FundingBanner = () => {
         <span className="flex items-center gap-1.5 font-semibold text-white">
           <HeartHandshake className="h-4 w-4 shrink-0 text-white/70" />
           This site may shut down - it costs&nbsp;<strong>$30/month</strong>&nbsp;to run.{" "}
-          <a href="/support" className="underline underline-offset-2 text-white/80 hover:text-white transition-colors text-xs font-normal">Learn why</a>
+          <Link href="/support" className="underline underline-offset-2 text-white/80 hover:text-white transition-colors text-xs font-normal">Learn why</Link>
         </span>
 
         <span className="text-red-300 hidden sm:inline">·</span>
