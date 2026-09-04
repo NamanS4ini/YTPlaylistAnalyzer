@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import Navbar from "@/components/navbar/navbar";
+import FundingBanner from "@/components/FundingBanner";
 import { Toaster } from "@/components/ui/sonner";
 import Providers from "./providers";
 
@@ -88,6 +89,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased w-full overflow-x-hidden text-white bg-zinc-900`}
       >
         <Providers>
+          <FundingBanner />
           <Navbar />
           {children}
           <Toaster className="dark" position="top-center" richColors />

@@ -87,6 +87,7 @@ type Settings = {
     upload: boolean;
     github: boolean;
     signIn: boolean;
+    support: boolean;
   };
   showAnnouncement: boolean;
   videoStats: "rounded" | "exact";

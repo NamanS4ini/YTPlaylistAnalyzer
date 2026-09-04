@@ -30,6 +30,7 @@ const DEFAULT_SETTINGS: Settings = {
         upload: true,
         github: true,
         signIn: true,
+        support: true,
     },
     showAnnouncement: true,
     videoStats: "rounded",

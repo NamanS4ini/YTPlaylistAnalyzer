@@ -17,7 +17,7 @@ import {
   SheetTrigger,
   SheetClose,
 } from "@/components/ui/sheet";
-import { CircleHelpIcon, Github, CircleAlertIcon, Menu, Upload, Home, Bookmark, UploadIcon, Coffee } from "lucide-react";
+import { CircleHelpIcon, Github, CircleAlertIcon, Menu, Upload, Home, Bookmark, UploadIcon, Coffee, HeartHandshake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import SignIn from "@/components/auth/signin";
@@ -25,13 +25,15 @@ import { SignOut } from "@/components/auth/signout";
 import HomepageSettingsNavButton from "./HomepageSettingsNavButton";
 import { useSession } from "next-auth/react";
 import { useSettings } from "@/hooks/useSettings";
+import { useFundingBanner } from "@/contexts/FundingBannerContext";
 
 export default function NavigationMenuDemo() {
   const { data: session } = useSession();
   const { settings } = useSettings();
+  const { isBannerVisible } = useFundingBanner();
 
   return (
-    <div className="fixed backdrop-blur-sm bg-black/70 z-50 flex justify-center p-2 w-full top-0">
+    <div className={`fixed backdrop-blur-sm bg-black/70 z-50 flex justify-center p-2 w-full transition-[top] duration-200 ${isBannerVisible ? "top-9" : "top-0"}`}>
       <div className="flex items-center justify-between w-full max-w-7xl gap-4">
         <div>
           <Link href="/">
@@ -59,7 +61,7 @@ export default function NavigationMenuDemo() {
                   </Link>
                 </NavigationMenuItem>
               )}
-              {(settings.navbarItems.about || settings.navbarItems.feedback || settings.navbarItems.buyMeACoffee || settings.navbarItems.upload || settings.navbarItems.github) && (
+              {(settings.navbarItems.about || settings.navbarItems.feedback || settings.navbarItems.buyMeACoffee || settings.navbarItems.upload || settings.navbarItems.github || settings.navbarItems.support) && (
                 <NavigationMenuItem>
                   <NavigationMenuTrigger className="sm:px-4 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
                     More
@@ -124,6 +126,18 @@ export default function NavigationMenuDemo() {
                               <h1 className="font-medium flex items-center gap-2">
                                 <Github />
                                 Github
+                              </h1>
+                            </Link>
+                          </NavigationMenuLink>
+                        </li>
+                      )}
+                      {settings.navbarItems.support && (
+                        <li>
+                          <NavigationMenuLink asChild>
+                            <Link href="/support">
+                              <h1 className="font-medium flex items-center gap-2">
+                                <HeartHandshake />
+                                Support
                               </h1>
                             </Link>
                           </NavigationMenuLink>
@@ -228,6 +242,16 @@ export default function NavigationMenuDemo() {
                       className="text-lg py-2 hover:text-blue-400 transition-colors flex items-center gap-2">
                       <Github className="h-5 w-5" />
                       Github
+                    </Link>
+                  </SheetClose>
+                )}
+                {settings.navbarItems.support && (
+                  <SheetClose asChild>
+                    <Link
+                      href="/support"
+                      className="text-lg py-2 hover:text-blue-400 transition-colors flex items-center gap-2">
+                      <HeartHandshake className="h-5 w-5" />
+                      Support
                     </Link>
                   </SheetClose>
                 )}

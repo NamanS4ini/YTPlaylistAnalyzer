@@ -23,6 +23,7 @@ export default function NavbarSettings() {
         upload: "Upload",
         github: "GitHub",
         signIn: "Sign In",
+        support: "Support",
     };
 
     const navbarStyleOptions = [
