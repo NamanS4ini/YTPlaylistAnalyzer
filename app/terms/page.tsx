@@ -22,7 +22,7 @@ export default function TermsPage() {
                 <div className="space-y-8">
                     <div>
                         <h1 className="text-4xl font-bold mb-2">Terms of Service</h1>
-                        <p className="text-zinc-400">Last updated: January 4, 2026</p>
+                        <p className="text-zinc-400">Last updated: September 27, 2026</p>
                     </div>
 
                     <div className="space-y-6">
@@ -72,10 +72,10 @@ export default function TermsPage() {
                                     <li>Use the Service for any illegal or unauthorized purpose</li>
                                     <li>Attempt to gain unauthorized access to any part of the Service</li>
                                     <li>Use automated means (bots, scripts) to access the Service excessively</li>
-                                    <li>Reverse engineer, decompile, or disassemble any part of the Service</li>
                                     <li>Abuse or misuse the YouTube Data API through our Service</li>
                                     <li>Violate YouTube&apos;s Terms of Service or API Terms of Service</li>
                                     <li>Share or redistribute user data obtained through the Service</li>
+                                    <li>Use the open-source code to create services that violate these Terms or applicable laws</li>
                                 </ul>
                             </div>
                         </section>
@@ -123,16 +123,10 @@ export default function TermsPage() {
                         </section>
 
                         <section>
-                            <h2 className="text-2xl font-semibold mb-3">6. Intellectual Property</h2>
+                            <h2 className="text-2xl font-semibold mb-3">6. Open Source &amp; Intellectual Property</h2>
                             <div className="text-zinc-300 space-y-3">
                                 <p className="leading-relaxed">
-                                    <strong className="text-white">6.1 Service Ownership:</strong> The Service, including its design, code, and functionality, is owned by YTPLA and is protected by copyright and other intellectual property laws.
-                                </p>
-                                <p className="leading-relaxed">
-                                    <strong className="text-white">6.2 YouTube Content:</strong> All YouTube content, including video titles, thumbnails, and metadata, remains the property of their respective owners.
-                                </p>
-                                <p className="leading-relaxed">
-                                    <strong className="text-white">6.3 Open Source:</strong> Parts of this Service may be open-sourced under specific licenses. Check our{" "}
+                                    <strong className="text-white">6.1 Open Source Project:</strong> YTPLA is fully open-source software. The complete source code is freely available on our{" "}
                                     <a
                                         href="https://github.com/NamanS4ini/YTPlaylistAnalyzer"
                                         target="_blank"
@@ -141,7 +135,25 @@ export default function TermsPage() {
                                     >
                                         GitHub repository
                                     </a>
-                                    {" "}for details.
+                                    . You are free to view, fork, modify, and self-host the code in accordance with the project&apos;s open-source license.
+                                </p>
+                                <p className="leading-relaxed">
+                                    <strong className="text-white">6.2 License:</strong> The source code is released under the MIT License. This means you may freely use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software, provided that the original copyright notice and license are included in all copies or substantial portions of the software. See the{" "}
+                                    <a
+                                        href="https://github.com/NamanS4ini/YTPlaylistAnalyzer/blob/main/LICENSE"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-400 hover:underline"
+                                    >
+                                        LICENSE file
+                                    </a>
+                                    {" "}for full details.
+                                </p>
+                                <p className="leading-relaxed">
+                                    <strong className="text-white">6.3 Contributions:</strong> Contributions to the project are welcome. By submitting a pull request or patch, you agree that your contribution will be licensed under the same MIT License that covers the project.
+                                </p>
+                                <p className="leading-relaxed">
+                                    <strong className="text-white">6.4 YouTube Content:</strong> All YouTube content accessed through the Service, including video titles, thumbnails, and metadata, remains the property of their respective owners and is subject to YouTube&apos;s Terms of Service.
                                 </p>
                             </div>
                         </section>
