@@ -1,7 +1,6 @@
-"use client";
-
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { FileSpreadsheet } from "lucide-react";
 
 type PlaylistSelectionControlsProps = {
     visibleCount: number;
@@ -9,6 +8,7 @@ type PlaylistSelectionControlsProps = {
     disabled?: boolean;
     onToggleAll: (checked: boolean) => void;
     onInvertSelection: () => void;
+    onExportCsv?: () => void;
 };
 
 export default function PlaylistSelectionControls({
@@ -17,6 +17,7 @@ export default function PlaylistSelectionControls({
     disabled = false,
     onToggleAll,
     onInvertSelection,
+    onExportCsv,
 }: PlaylistSelectionControlsProps) {
     const checkboxRef = useRef<HTMLInputElement>(null);
     const allSelected = visibleCount > 0 && selectedCount === visibleCount;
@@ -49,8 +50,8 @@ export default function PlaylistSelectionControls({
                     </div>
                 </label>
 
-                <div className="flex items-center gap-3">
-                    <span className="text-xs text-zinc-500">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                    <span className="text-xs text-zinc-500 hidden sm:inline">
                         {allSelected ? "All selected" : someSelected ? "Partial selection" : "Nothing selected"}
                     </span>
                     <Button
@@ -59,10 +60,23 @@ export default function PlaylistSelectionControls({
                         size="sm"
                         onClick={onInvertSelection}
                         disabled={disabled || visibleCount === 0}
-                        className="dark cursor-pointer"
+                        className="dark cursor-pointer text-xs"
                     >
                         Invert selection
                     </Button>
+                    {onExportCsv && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={onExportCsv}
+                            disabled={disabled || visibleCount === 0}
+                            className="dark cursor-pointer text-xs border-emerald-500/40 hover:border-emerald-500 hover:bg-emerald-500/10 text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5"
+                        >
+                            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+                            Export CSV
+                        </Button>
+                    )}
                 </div>
             </div>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { BookmarkIcon, Clock3, RefreshCw } from "lucide-react";
+import { BookmarkIcon, Clock3, FileSpreadsheet, RefreshCw } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import { useEffect, useMemo, useState } from "react";
 import { ImageLoaderProps } from "next/image";
@@ -12,6 +12,7 @@ import SortControls from "./SortControls";
 import PlaylistRangeControls from "./PlaylistRangeControls";
 import PlaylistSelectionControls from "./PlaylistSelectionControls";
 import ErrorDisplay from "./ErrorDisplay";
+import ExportCsvModal from "./ExportCsvModal";
 import {
     Pagination,
     PaginationContent,
@@ -64,6 +65,7 @@ export default function PlaylistDetails({
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [rangeVideoData, setRangeVideoData] = useState<VideoData[] | null>(null);
     const [excludedVideoIds, setExcludedVideoIds] = useState<Set<string>>(new Set());
+    const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
     const videosPerPage = 30;
 
     const {
@@ -386,8 +388,19 @@ export default function PlaylistDetails({
                         )}
                     </div>
 
-                    {id !== "uploaded" && (
-                        <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap justify-center">
+                        <Button
+                            variant="outline"
+                            size="lg"
+                            onClick={() => setIsExportModalOpen(true)}
+                            disabled={loading || visibleVideoData.length === 0}
+                            className="dark cursor-pointer text-sm md:text-base border-emerald-500/40 hover:border-emerald-500 hover:bg-emerald-500/10 text-emerald-400 hover:text-emerald-300 flex items-center gap-2"
+                        >
+                            <FileSpreadsheet className="h-5 w-5 text-emerald-400" />
+                            <span>Export CSV</span>
+                        </Button>
+
+                        {id !== "uploaded" && (
                             <Toggle
                                 onClick={handleBookmark}
                                 size="lg"
@@ -399,8 +412,8 @@ export default function PlaylistDetails({
                                     {isBookmarked ? " Bookmarked" : " Bookmark"}
                                 </p>
                             </Toggle>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
 
                 <StatisticsCards
@@ -433,6 +446,7 @@ export default function PlaylistDetails({
                     disabled={loading || visibleVideoCount === 0}
                     onToggleAll={handleToggleVisibleRangeSelection}
                     onInvertSelection={handleInvertSelection}
+                    onExportCsv={() => setIsExportModalOpen(true)}
                 />
 
                 <div className="flex justify-center items-center gap-2 text-sm text-zinc-400 mt-4">
@@ -519,6 +533,18 @@ export default function PlaylistDetails({
                             </PaginationContent>
                         </Pagination>
                     </div>
+                )}
+
+                {visibleVideoData.length > 0 && (
+                    <ExportCsvModal
+                        isOpen={isExportModalOpen}
+                        onClose={() => setIsExportModalOpen(false)}
+                        playlistTitle={playlistData?.title}
+                        playlistId={playlistData?.id || id}
+                        visibleVideos={visibleVideoData}
+                        selectedVideos={selectedVideoData}
+                        fullVideos={fullVideoData}
+                    />
                 )}
             </div>
         </div>
