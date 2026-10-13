@@ -16,10 +16,17 @@ export type CsvColumnId =
     | "channelId"
     | "thumbnail";
 
+export type CsvColumnCategory =
+    | "General"
+    | "Engagement"
+    | "Video Info"
+    | "Channel"
+    | "Media";
+
 export interface CsvColumnDefinition {
     id: CsvColumnId;
     label: string;
-    category: "General" | "Engagement" | "Video Info" | "Channel";
+    category: CsvColumnCategory;
     description: string;
     defaultSelected: boolean;
     getValue: (video: VideoData, playlistId?: string | null) => string | number;

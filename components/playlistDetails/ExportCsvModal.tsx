@@ -25,6 +25,7 @@ import {
 import { toast } from "sonner";
 import {
     CSV_COLUMNS,
+    CsvColumnCategory,
     CsvColumnId,
     downloadCsv,
     generateCsvContent,
@@ -197,7 +198,7 @@ export default function ExportCsvModal({
     };
 
     // Categories grouping
-    const categories: ("General" | "Engagement" | "Video Info" | "Channel" | "Media")[] = [
+    const categories: CsvColumnCategory[] = [
         "General",
         "Engagement",
         "Video Info",
